@@ -3,6 +3,7 @@ COMP30024 Artificial Intelligence, Semester 1 2019
 Solution to Project Part A: Searching
 
 Authors: 
+640092 James Taranto
 """
 
 import sys
