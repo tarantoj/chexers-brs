@@ -48,6 +48,7 @@ class Board:
     def get_piece(self, hex):
         return self.board[hex.q, hex.r]
 
+
 class Hex:
     def __init__(self, q, r, colour=""):
         self.q = q
@@ -72,11 +73,8 @@ class Hex:
         neighbours = []
         directions = [Hex(1, 0), Hex(1, -1), Hex(0, -1), Hex(-1, 0), Hex(-1, 1), Hex(0, 1)]
         for direction in directions:
-            neighbour = board.get_piece(self.add(direction))
-            print(neighbour)
-            if neighbour.get_colour() != self.get_colour():
-                print("got")
-                neighbours.append(neighbour)
+            neighbour = self.add(direction)
+            neighbours.append(neighbour)
         return neighbours
     @staticmethod
     def length(hex):
@@ -84,7 +82,6 @@ class Hex:
     def distance(self, other):
         return Hex.length(self.substract(other))
         
-board = Board()
 
 def main():
     with open(sys.argv[1]) as file:
@@ -98,6 +95,18 @@ def main():
         #print(board.board[(1,0)])
         print_board(board.board,debug=True)
         print(board.get_piece(Hex(0,0)).neighbours())
+
+        goals = []
+        if data['colour'] == "red":
+            goals = red_goal
+        else if data['colour'] == "green":
+            goals = green_goal
+        else if data['colour'] == "blue":
+            goals = blue_goal
+        else:
+            print("No colour found")
+            exit
+
         #for n in Hex(0,1).neighbours():
          #   print(board.get_piece(n))
 
