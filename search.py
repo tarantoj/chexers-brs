@@ -99,9 +99,9 @@ def main():
         goals = []
         if data['colour'] == "red":
             goals = red_goal
-        else if data['colour'] == "green":
+        elif data['colour'] == "green":
             goals = green_goal
-        else if data['colour'] == "blue":
+        elif data['colour'] == "blue":
             goals = blue_goal
         else:
             print("No colour found")
