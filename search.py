@@ -8,6 +8,31 @@ Authors:
 
 import sys
 import json
+from queue import PriorityQueue
+
+def a_star_search(board, start, goal):
+    frontier = PriorityQueue()
+    frontier.put(0, start)
+    came_from = {}
+    cost_so_far = {}
+    came_from[start] = None
+    cost_so_far[start] = 0
+
+    while not frontier.empty():
+        current = frontier.get()
+
+        if current == goal:
+            break
+
+        for next in current.neighbours:
+            new_cost = cost_so_far[current] + 1
+            if next not in cost_so_far or new_cost < cost_so_far[next]:
+                cost_so_far[next] = new_cost
+                priority = new_cost + next.distance(goal)
+                frontier.put(next, priority)
+                came_from[next] = current
+
+    return came_from, cost_so_far
 
 class Board:
     def __init__(self):
@@ -43,7 +68,9 @@ class Hex:
         neighbours = []
         directions = [Hex(1, 0), Hex(1, -1), Hex(0, -1), Hex(-1, 0), Hex(-1, 1), Hex(0, 1)]
         for direction in directions:
-            neighbours.append(self.add(direction))
+            neighbour = self.add(direction)
+            #if board.get_piece(neighbour.q, neighbour.r) == "":
+            neighbours.append(neighbour)
         return neighbours
     @staticmethod
     def length(hex):
