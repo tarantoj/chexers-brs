@@ -18,11 +18,11 @@ class Board:
     def set_piece(self, q, r, colour):
         self.board[(q, r)] = Hex(q, r, colour=colour)
     def get_piece(self, q, r):
-        return self.board[(q,)]
+        return self.board[(q,r)]
 
 
 class Hex:
-    def __init__(self, q, r, colour=None):
+    def __init__(self, q, r, colour=""):
         self.q = q
         self.r = r
         self.s = -q-r
@@ -34,7 +34,7 @@ class Hex:
     def __eq__(self, other):
         return self.q == other.q and self.r == other.r
     def __str__(self):
-        return "(%s, %s): %s" % (self.q, self.s, self.colour)
+        return self.colour
     def add(self, other):
         return Hex(self.q + other.q, self.r + other.r)
     def substract(self, other):
@@ -58,10 +58,14 @@ def main():
         data = json.load(file)
         board = Board()
         for piece in data['pieces']:
+            print((piece[0], piece[1]))
             board.set_piece(piece[0], piece[1], data['colour'])
         for piece in data['blocks']:
             board.set_piece(piece[0], piece[1], 'block')
-        #print_board(board.board)
+        #print(board.board[(1,0)])
+        print_board(board.board,debug=True)
+        for n in Hex(0,1).neighbours():
+            print(board.get_piece(n.q, n.r))
     # TODO: Search for and output winning sequence of moves
     # ...
 
