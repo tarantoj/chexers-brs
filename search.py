@@ -9,6 +9,9 @@ Authors:
 import sys
 import json
 from queue import PriorityQueue
+red_goal = [(3, -3), (3, -2), (3, -1), (3, 0)]
+blue_goal = [(0, -3), (-1, -2), (-2, -1), (-3, 0)]
+green_goal = [(-3, 3), (-2, 3), (-1, 3), (0, 3)]
 
 def a_star_search(board, start, goal):
     frontier = PriorityQueue()
@@ -42,9 +45,8 @@ class Board:
             self.board[(q, r)] = Hex(q, r)
     def set_piece(self, q, r, colour):
         self.board[(q, r)] = Hex(q, r, colour=colour)
-    def get_piece(self, q, r):
-        return self.board[(q,r)]
-
+    def get_piece(self, hex):
+        return self.board[hex.q, hex.r]
 
 class Hex:
     def __init__(self, q, r, colour=""):
@@ -64,13 +66,17 @@ class Hex:
         return Hex(self.q + other.q, self.r + other.r)
     def substract(self, other):
         return Hex(self.q - other.q, self.r - other.r)
+    def get_colour(self):
+        return self.colour
     def neighbours(self):
         neighbours = []
         directions = [Hex(1, 0), Hex(1, -1), Hex(0, -1), Hex(-1, 0), Hex(-1, 1), Hex(0, 1)]
         for direction in directions:
-            neighbour = self.add(direction)
-            #if board.get_piece(neighbour.q, neighbour.r) == "":
-            neighbours.append(neighbour)
+            neighbour = board.get_piece(self.add(direction))
+            print(neighbour)
+            if neighbour.get_colour() != self.get_colour():
+                print("got")
+                neighbours.append(neighbour)
         return neighbours
     @staticmethod
     def length(hex):
@@ -78,21 +84,24 @@ class Hex:
     def distance(self, other):
         return Hex.length(self.substract(other))
         
-
+board = Board()
 
 def main():
     with open(sys.argv[1]) as file:
         data = json.load(file)
         board = Board()
         for piece in data['pieces']:
-            print((piece[0], piece[1]))
+            #print((piece[0], piece[1]))
             board.set_piece(piece[0], piece[1], data['colour'])
         for piece in data['blocks']:
             board.set_piece(piece[0], piece[1], 'block')
         #print(board.board[(1,0)])
         print_board(board.board,debug=True)
-        for n in Hex(0,1).neighbours():
-            print(board.get_piece(n.q, n.r))
+        print(board.get_piece(Hex(0,0)).neighbours())
+        #for n in Hex(0,1).neighbours():
+         #   print(board.get_piece(n))
+
+        
     # TODO: Search for and output winning sequence of moves
     # ...
 
