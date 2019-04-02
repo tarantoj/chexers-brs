@@ -45,6 +45,11 @@ class Hex:
         for direction in directions:
             neighbours.append(self.add(direction))
         return neighbours
+    @staticmethod
+    def length(hex):
+        return int((abs(hex.q) + abs(hex.r) + abs(hex.s))/2)
+    def distance(self, other):
+        return Hex.length(self.substract(other))
         
 
 
