@@ -9,10 +9,54 @@ Authors:
 import sys
 import json
 
+class Board:
+    def __init__(self):
+        ran = range(-3, +3+1)
+        self.board = {}
+        for (q, r) in [(q,r) for q in ran for r in ran if -q-r in ran]:
+            self.board[(q, r)] = Hex(q, r)
+    def set_piece(self, q, r, colour):
+        self.board[(q, r)] = Hex(q, r, colour=colour)
+    def get_piece(self, q, r):
+        return self.board[(q,)]
+
+
+class Hex:
+    def __init__(self, q, r, colour=None):
+        self.q = q
+        self.r = r
+        self.s = -q-r
+        self.colour = colour
+        assert not (self.q + self.r + self.s != 0), "q + r + s must be 0"
+    def __repr__(self):
+        if self.colour: return self.colour
+        return ''
+    def __eq__(self, other):
+        return self.q == other.q and self.r == other.r
+    def __str__(self):
+        return "(%s, %s): %s" % (self.q, self.s, self.colour)
+    def add(self, other):
+        return Hex(self.q + other.q, self.r + other.r)
+    def substract(self, other):
+        return Hex(self.q - other.q, self.r - other.r)
+    def neighbours(self):
+        neighbours = []
+        directions = [Hex(1, 0), Hex(1, -1), Hex(0, -1), Hex(-1, 0), Hex(-1, 1), Hex(0, 1)]
+        for direction in directions:
+            neighbours.append(self.add(direction))
+        return neighbours
+        
+
+
 def main():
     with open(sys.argv[1]) as file:
         data = json.load(file)
-
+        board = Board()
+        for piece in data['pieces']:
+            board.set_piece(piece[0], piece[1], data['colour'])
+        for piece in data['blocks']:
+            board.set_piece(piece[0], piece[1], 'block')
+        #print_board(board.board)
     # TODO: Search for and output winning sequence of moves
     # ...
 
