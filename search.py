@@ -9,9 +9,12 @@ Authors:
 import sys
 import json
 from queue import PriorityQueue
-red_goal = [(3, -3), (3, -2), (3, -1), (3, 0)]
-blue_goal = [(0, -3), (-1, -2), (-2, -1), (-3, 0)]
-green_goal = [(-3, 3), (-2, 3), (-1, 3), (0, 3)]
+
+goals = {
+    "red" : [(3, -3), (3, -2), (3, -1), (3, 0)],
+    "green" : [(0, -3), (-1, -2), (-2, -1), (-3, 0)],
+    "blue" : [(-3, 3), (-2, 3), (-1, 3), (0, 3)]
+}
 
 def a_star_search(board, start, goal):
     frontier = PriorityQueue()
@@ -91,21 +94,11 @@ class Hex:
     def jump(self, other):
         if other.colour and self.colour != other.colour:
             print()
-            
 
-
-        
-
-goals = {
-    "red" : [(3, -3), (3, -2), (3, -1), (3, 0)],
-    "green" : [(0, -3), (-1, -2), (-2, -1), (-3, 0)],
-    "blue" : [(-3, 3), (-2, 3), (-1, 3), (0, 3)]
-}
 
 def main():
     with open(sys.argv[1]) as file:
         data = json.load(file)
-        print(goals)
         board = Board()
         for piece in data['pieces']:
             #print((piece[0], piece[1]))
@@ -117,17 +110,7 @@ def main():
         for n in Hex(0,0).neighbours():
             print(board.get_piece(n))
         print(board.board)
-
-        goals = []
-        if data['colour'] == "red":
-            goals = red_goal
-        elif data['colour'] == "green":
-            goals = green_goal
-        elif data['colour'] == "blue":
-            goals = blue_goal
-        else:
-            print("No colour found")
-            exit
+        goal = goals[data['colour']]
 
         #for n in Hex(0,1).neighbours():
          #   print(board.get_piece(n))
