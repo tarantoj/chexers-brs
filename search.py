@@ -96,9 +96,16 @@ class Hex:
 
         
 
+goals = {
+    "red" : [(3, -3), (3, -2), (3, -1), (3, 0)],
+    "green" : [(0, -3), (-1, -2), (-2, -1), (-3, 0)],
+    "blue" : [(-3, 3), (-2, 3), (-1, 3), (0, 3)]
+}
+
 def main():
     with open(sys.argv[1]) as file:
         data = json.load(file)
+        print(goals)
         board = Board()
         for piece in data['pieces']:
             #print((piece[0], piece[1]))
