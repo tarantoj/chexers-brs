@@ -81,6 +81,19 @@ class Hex:
         return int((abs(hex.q) + abs(hex.r) + abs(hex.s))/2)
     def distance(self, other):
         return Hex.length(self.substract(other))
+    def move(self, other):
+        if not other.colour and other in self.neighbours():
+            other.colour = self.colour
+            self.colour = ""
+            print("MOVE from ({}, {}) to ({}, {})".format(self.q, self.r, other.q, other.r))
+        else:
+            print("Can't move")
+    def jump(self, other):
+        if other.colour and self.colour != other.colour:
+            print()
+            
+
+
         
 
 def main():
@@ -94,7 +107,9 @@ def main():
             board.set_piece(piece[0], piece[1], 'block')
         #print(board.board[(1,0)])
         print_board(board.board,debug=True)
-        print(board.get_piece(Hex(0,0)).neighbours())
+        for n in Hex(0,0).neighbours():
+            print(board.get_piece(n))
+        print(board.board)
 
         goals = []
         if data['colour'] == "red":
