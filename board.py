@@ -12,6 +12,10 @@ class Hex:
         return self.q == other.q and self.r == other.r
     def __str__(self):
         return self.colour
+    def __hash__(self):
+        return hash((q, r))
+    def __lt__(self, other):
+        return 0
     def add(self, other):
         return Hex(self.q + other.q, self.r + other.r)
     def substract(self, other):
@@ -27,11 +31,11 @@ class Hex:
 #            neighbour = self.add(direction)
 #            neighbours.append(neighbour)
 #        return neighbours
-#    @staticmethod
-#    def length(hex):
-#        return int((abs(hex.q) + abs(hex.r) + abs(hex.s))/2)
-#    def distance(self, other):
-#        return Hex.length(self.substract(other))
+    @staticmethod
+    def length(hex):
+        return int((abs(hex.q) + abs(hex.r) + abs(hex.s))/2)
+    def distance(self, other):
+        return Hex.length(self.substract(other))
 #    def move(self, other):
 #        if not other.colour and other in self.neighbours():
 #            other.colour = self.colour
@@ -75,7 +79,15 @@ def moves(a):
         ]
 
     for direction in directions:
-        neighbour = get_piece(a.add(direction))
+        n = a.add(direction)
+        try:
+            neighbour = get_piece(n)
+        except:
+            print('except')
+            continue
+        else:
+            print('break')
+            continue
         if not neighbour.get_colour():
             moves.append(neighbour)
         elif neighbour.get_colour() != a.get_colour():

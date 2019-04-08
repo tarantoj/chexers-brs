@@ -17,26 +17,31 @@ goals = {
     "blue" : [(-3, 3), (-2, 3), (-1, 3), (0, 3)]
 }
 
-def a_star_search(board, start, goal):
+def a_star_search(graph, start, goal):
     frontier = PriorityQueue()
-    frontier.put(0, start)
+    frontier.put((0, start))
     came_from = {}
     cost_so_far = {}
     came_from[start] = None
     cost_so_far[start] = 0
 
     while not frontier.empty():
-        current = frontier.get()
+        current = frontier.get()[1]
+
+        print(f"current {current}")
+        print(f"goal {goal}")
+        print(f"start {start}")
 
         if current == goal:
             break
 
-        for next in current.neighbours():
+        for next in board.moves(current)['moves']:
+            print(next)
             new_cost = cost_so_far[current] + 1
             if next not in cost_so_far or new_cost < cost_so_far[next]:
                 cost_so_far[next] = new_cost
                 priority = new_cost + next.distance(goal)
-                frontier.put(next, priority)
+                frontier.put((priority, next))
                 came_from[next] = current
 
     return came_from, cost_so_far
@@ -108,6 +113,9 @@ def main():
         #print(board.board[(1,0)])
         print(board.moves(board.get_piece(board.Hex(-1, 1))))
         print_board(board.get_board(),debug=True)
+        print(a_star_search(board.get_board(),
+            board.get_piece(board.Hex(0,-1)),
+            board.get_piece(board.Hex(3, -3))))
         goal = goals[data['colour']]
 
         #for n in Hex(0,1).neighbours():
