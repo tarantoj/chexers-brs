@@ -4,18 +4,25 @@ class Hex:
         self.r = r
         self.s = -q-r
         self.colour = colour
+        self.g = 0
+        self.h = 0
+        self.f = self.g + self.h
         assert not (self.q + self.r + self.s != 0), "q + r + s must be 0"
     def __repr__(self):
         return f"({self.q}, {self.r}): {self.colour}"
         #return ''
     def __eq__(self, other):
         return self.q == other.q and self.r == other.r
-    def __str__(self):
-        return self.colour
+    def __str__(self, debug=False):
+        if debug:
+            return f"({self.q}, {self.r}): {self.colour}"
+        else:
+            return self.colour
+        #return f"({self.q}, {self.r}): {self.colour}"
     def __hash__(self):
         return hash((q, r))
     def __lt__(self, other):
-        return 0
+        return self.f < other.f
     def add(self, other):
         return Hex(self.q + other.q, self.r + other.r)
     def substract(self, other):
@@ -83,10 +90,6 @@ def moves(a):
         try:
             neighbour = get_piece(n)
         except:
-            print('except')
-            continue
-        else:
-            print('break')
             continue
         if not neighbour.get_colour():
             moves.append(neighbour)
