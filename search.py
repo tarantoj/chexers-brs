@@ -9,6 +9,7 @@ Authors:
 import sys
 import json
 from queue import PriorityQueue
+import board
 
 goals = {
     "red" : [(3, -3), (3, -2), (3, -1), (3, 0)],
@@ -40,7 +41,7 @@ def a_star_search(board, start, goal):
 
     return came_from, cost_so_far
 
-class Board:
+""" class Board:
     def __init__(self):
         ran = range(-3, +3+1)
         self.board = {}
@@ -95,21 +96,18 @@ class Hex:
         if other.colour and self.colour != other.colour:
             print()
 
-
+ """
 def main():
     with open(sys.argv[1]) as file:
         data = json.load(file)
-        board = Board()
         for piece in data['pieces']:
             #print((piece[0], piece[1]))
             board.set_piece(piece[0], piece[1], data['colour'])
         for piece in data['blocks']:
             board.set_piece(piece[0], piece[1], 'block')
         #print(board.board[(1,0)])
-        print_board(board.board,debug=True)
-        for n in Hex(0,0).neighbours():
-            print(board.get_piece(n))
-        print(board.board)
+        print(board.moves(board.get_piece(board.Hex(-1, 1))))
+        print_board(board.get_board(),debug=True)
         goal = goals[data['colour']]
 
         #for n in Hex(0,1).neighbours():

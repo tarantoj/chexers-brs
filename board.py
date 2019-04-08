@@ -6,8 +6,8 @@ class Hex:
         self.colour = colour
         assert not (self.q + self.r + self.s != 0), "q + r + s must be 0"
     def __repr__(self):
-        if self.colour: return self.colour
-        return ''
+        return f"({self.q}, {self.r}): {self.colour}"
+        #return ''
     def __eq__(self, other):
         return self.q == other.q and self.r == other.r
     def __str__(self):
@@ -44,16 +44,43 @@ class Hex:
 #            print()
 
 board = {}
-ran = range(-3, +3-1)
+ran = range(-3, +3+1)
 for (q, r) in [(q,r) for q in ran for r in ran if -q-r in ran]:
     board[(q, r)] = Hex(q, r)
 
-def add_piece(q, r, colour):
+
+def get_board():
+    return board
+
+def set_piece(q, r, colour):
     board[(q, r)].set_colour(colour)
+
+def get_piece(hex):
+    return board[(hex.q, hex.r)]
 
 def move(a, b):
     a_colour = a.get_colour()
     b_colour = b.get_colour()
     a.set_colour(b_colour)
-    b.set_colour(b_colour)
+    b.set_colour(a_colour)
     print("MOVE")
+
+def moves(a):
+    moves = []
+    jumps = []
+
+    directions = [
+        Hex(1, 0), Hex(1, -1), Hex(0, -1),
+        Hex(-1, 0), Hex(-1, 1), Hex(0, 1)
+        ]
+
+    for direction in directions:
+        neighbour = get_piece(a.add(direction))
+        if not neighbour.get_colour():
+            moves.append(neighbour)
+        elif neighbour.get_colour() != a.get_colour():
+            jump = get_piece(neighbour.add(direction))
+            if not jump.get_colour():
+                jumps.append({'to': jump, 'over': neighbour})
+
+    return {'moves': moves, 'jumps': jumps}
