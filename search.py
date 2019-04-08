@@ -30,7 +30,7 @@ def a_star_search(board, start, goal):
         if current == goal:
             break
 
-        for next in current.neighbours:
+        for next in current.neighbours():
             new_cost = cost_so_far[current] + 1
             if next not in cost_so_far or new_cost < cost_so_far[next]:
                 cost_so_far[next] = new_cost
