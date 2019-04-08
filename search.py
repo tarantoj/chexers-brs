@@ -11,11 +11,6 @@ import json
 from queue import PriorityQueue
 import board
 
-goals = {
-    "red" : [(3, -3), (3, -2), (3, -1), (3, 0)],
-    "green" : [(0, -3), (-1, -2), (-2, -1), (-3, 0)],
-    "blue" : [(-3, 3), (-2, 3), (-1, 3), (0, 3)]
-}
 
 def a_star_search(start, goal):
     frontier = PriorityQueue()
@@ -35,7 +30,10 @@ def a_star_search(start, goal):
 
         if current == goal:
             break
-
+        moves = board.moves(current)['moves']
+        jumps = board.moves(current)['jumps']
+        for j in jumps:
+            moves.append(j['to'])
         for next in board.moves(current)['moves']:
 #            print(f"next {next}")
             #new_cost = cost_so_far[current] + 1
@@ -50,92 +48,27 @@ def a_star_search(start, goal):
 
     return came_from, cost_so_far
 
-""" class Board:
-    def __init__(self):
-        ran = range(-3, +3+1)
-        self.board = {}
-        for (q, r) in [(q,r) for q in ran for r in ran if -q-r in ran]:
-            self.board[(q, r)] = Hex(q, r)
-    def set_piece(self, q, r, colour):
-        self.board[(q, r)] = Hex(q, r, colour=colour)
-    def get_piece(self, hex):
-        return self.board[hex.q, hex.r]
-
-
-class Hex:
-    def __init__(self, q, r, colour=""):
-        self.q = q
-        self.r = r
-        self.s = -q-r
-        self.colour = colour
-        assert not (self.q + self.r + self.s != 0), "q + r + s must be 0"
-    def __repr__(self):
-        if self.colour: return self.colour
-        return ''
-    def __eq__(self, other):
-        return self.q == other.q and self.r == other.r
-    def __str__(self):
-        return self.colour
-    def add(self, other):
-        return Hex(self.q + other.q, self.r + other.r)
-    def substract(self, other):
-        return Hex(self.q - other.q, self.r - other.r)
-    def get_colour(self):
-        return self.colour
-    def neighbours(self):
-        neighbours = []
-        directions = [Hex(1, 0), Hex(1, -1), Hex(0, -1), Hex(-1, 0), Hex(-1, 1), Hex(0, 1)]
-        for direction in directions:
-            neighbour = self.add(direction)
-            neighbours.append(neighbour)
-        return neighbours
-    @staticmethod
-    def length(hex):
-        return int((abs(hex.q) + abs(hex.r) + abs(hex.s))/2)
-    def distance(self, other):
-        return Hex.length(self.substract(other))
-    def move(self, other):
-        if not other.colour and other in self.neighbours():
-            other.colour = self.colour
-            self.colour = ""
-            print("MOVE from ({}, {}) to ({}, {})".format(self.q, self.r, other.q, other.r))
-        else:
-            print("Can't move")
-    def jump(self, other):
-        if other.colour and self.colour != other.colour:
-            print()
-
- """
 def main():
     with open(sys.argv[1]) as file:
         data = json.load(file)
+        pieces = []
         for piece in data['pieces']:
-            #print((piece[0], piece[1]))
-            board.set_piece(piece[0], piece[1], data['colour']) 
+            pieces.append(board.set_piece(piece[0], piece[1], data['colour']))
         for piece in data['blocks']:
             board.set_piece(piece[0], piece[1], 'block')
-        #print(board.board[(1,0)])
-        print(board.moves(board.get_piece(board.Hex(-1, 1))))
-        print_board(board.get_board(),debug=True)
-        a, b = a_star_search(board.get_piece(board.Hex(0,-1)),
-            board.get_piece(board.Hex(3, -3)))
 
-        current = board.Hex(3, -3)
-        path = []
-        while current != board.Hex(0, -1):
-            path.append(current)
-            current = a[current]
-        
-        for i in path:
-            print(f"({i.q}, {i.r}): {i.colour}")
-        goal = goals[data['colour']]
+        for p in pieces:
+            came_from, cost_so_far = a_star_search(p, p.goal[0])
+            print(came_from)
+            path = []
+            current = p.goal[0]
+            while current != p:
+                path.append(current)
+                current = came_from[current]
+            print(path.reverse())
+        print_board(board.get_board(), debug=True)
 
-        #for n in Hex(0,1).neighbours():
-         #   print(board.get_piece(n))
 
-        
-    # TODO: Search for and output winning sequence of moves
-    # ...
 
 
 def print_board(board_dict, message="", debug=False, **kwargs):

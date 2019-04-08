@@ -17,16 +17,13 @@ class Hex:
         self.goal = None
         assert not (self.q + self.r + self.s != 0), "q + r + s must be 0"
     def __repr__(self):
-        return f"({self.q}, {self.r}): {self.colour}"
+        return f"({self.q}, {self.r})"#: {self.colour}; goal: {self.goal}"
         #return ''
     def __eq__(self, other):
         return self.q == other.q and self.r == other.r
-    def __str__(self, debug=False):
-        if debug:
-            return f"({self.q}, {self.r}): {self.colour}"
-        else:
-            return self.colour
-        #return f"({self.q}, {self.r}): {self.colour}"
+    def __str__(self):
+        return self.colour
+        #return f"({self.q}, {self.r}): {self.colour}; goal: {self.goal}"
     def __hash__(self):
         return hash((q, r))
     def __lt__(self, other):
@@ -40,13 +37,11 @@ class Hex:
     def set_colour(self, colour):
         self.colour = colour
     def set_goal(self):
-        if self.colour:
-            goal = goals[self.colour][0]
-            for g in goals[self.colour]:
-                if self.distance(g) < self.distance(goal):
-                    goal = g
+        if self.colour in ["red", "green", "blue"]:
+            a = [get_tpiece(q, r) for (q, r) in goals[self.colour]]
+            self.goal = sorted(a, key=self.distance)
 
-        print(f"goal: {goal}")
+
 
     @staticmethod
     def length(hex):
@@ -72,15 +67,14 @@ for (q, r) in [(q,r) for q in ran for r in ran if -q-r in ran]:
 
 def get_board():
     return board
-goals = {
-    "red" : [(3, -3), (3, -2), (3, -1), (3, 0)],
-    "green" : [(0, -3), (-1, -2), (-2, -1), (-3, 0)],
-    "blue" : [(-3, 3), (-2, 3), (-1, 3), (0, 3)]
-}
+
+def get_tpiece(q, r):
+    return get_piece(Hex(q, r))
 
 def set_piece(q, r, colour):
     board[(q, r)].set_colour(colour)
-    board[(q, r)].set_goal
+    board[(q, r)].set_goal()
+    return board[(q, r)]
 
 def get_piece(hex):
     return board[(hex.q, hex.r)]
@@ -110,7 +104,10 @@ def moves(a):
         if not neighbour.get_colour():
             moves.append(neighbour)
         elif neighbour.get_colour() != a.get_colour():
-            jump = get_piece(neighbour.add(direction))
+            try:
+                jump = get_piece(neighbour.add(direction))
+            except:
+                continue
             if not jump.get_colour():
                 jumps.append({'to': jump, 'over': neighbour})
 
