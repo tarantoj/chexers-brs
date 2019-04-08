@@ -1,3 +1,10 @@
+
+goals = {
+    "red" : [(3, -3), (3, -2), (3, -1), (3, 0)],
+    "green" : [(0, -3), (-1, -2), (-2, -1), (-3, 0)],
+    "blue" : [(-3, 3), (-2, 3), (-1, 3), (0, 3)]
+}
+
 class Hex:
     def __init__(self, q, r, colour=""):
         self.q = q
@@ -7,6 +14,7 @@ class Hex:
         self.g = 0
         self.h = 0
         self.f = self.g + self.h
+        self.goal = None
         assert not (self.q + self.r + self.s != 0), "q + r + s must be 0"
     def __repr__(self):
         return f"({self.q}, {self.r}): {self.colour}"
@@ -31,13 +39,15 @@ class Hex:
         return self.colour
     def set_colour(self, colour):
         self.colour = colour
-#    def neighbours(self):
-#        neighbours = []
-#        directions = [Hex(1, 0), Hex(1, -1), Hex(0, -1), Hex(-1, 0), Hex(-1, 1), Hex(0, 1)]
-#        for direction in directions:
-#            neighbour = self.add(direction)
-#            neighbours.append(neighbour)
-#        return neighbours
+    def set_goal(self):
+        if self.colour:
+            goal = goals[self.colour][0]
+            for g in goals[self.colour]:
+                if self.distance(g) < self.distance(goal):
+                    goal = g
+
+        print(f"goal: {goal}")
+
     @staticmethod
     def length(hex):
         return int((abs(hex.q) + abs(hex.r) + abs(hex.s))/2)
@@ -62,9 +72,15 @@ for (q, r) in [(q,r) for q in ran for r in ran if -q-r in ran]:
 
 def get_board():
     return board
+goals = {
+    "red" : [(3, -3), (3, -2), (3, -1), (3, 0)],
+    "green" : [(0, -3), (-1, -2), (-2, -1), (-3, 0)],
+    "blue" : [(-3, 3), (-2, 3), (-1, 3), (0, 3)]
+}
 
 def set_piece(q, r, colour):
     board[(q, r)].set_colour(colour)
+    board[(q, r)].set_goal
 
 def get_piece(hex):
     return board[(hex.q, hex.r)]

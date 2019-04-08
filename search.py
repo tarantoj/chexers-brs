@@ -111,7 +111,7 @@ def main():
         data = json.load(file)
         for piece in data['pieces']:
             #print((piece[0], piece[1]))
-            board.set_piece(piece[0], piece[1], data['colour'])
+            board.set_piece(piece[0], piece[1], data['colour']) 
         for piece in data['blocks']:
             board.set_piece(piece[0], piece[1], 'block')
         #print(board.board[(1,0)])
