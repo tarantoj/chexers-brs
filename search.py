@@ -17,7 +17,7 @@ goals = {
     "blue" : [(-3, 3), (-2, 3), (-1, 3), (0, 3)]
 }
 
-def a_star_search(graph, start, goal):
+def a_star_search(start, goal):
     frontier = PriorityQueue()
     frontier.put((0, start))
     came_from = {}
@@ -117,8 +117,7 @@ def main():
         #print(board.board[(1,0)])
         print(board.moves(board.get_piece(board.Hex(-1, 1))))
         print_board(board.get_board(),debug=True)
-        a, b = a_star_search(board.get_board(),
-            board.get_piece(board.Hex(0,-1)),
+        a, b = a_star_search(board.get_piece(board.Hex(0,-1)),
             board.get_piece(board.Hex(3, -3)))
 
         current = board.Hex(3, -3)
