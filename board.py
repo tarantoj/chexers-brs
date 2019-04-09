@@ -22,8 +22,8 @@ class Hex:
     def __eq__(self, other):
         return self.q == other.q and self.r == other.r
     def __str__(self):
-        #return self.colour
-        return f"({self.q}, {self.r})"
+        return self.colour
+        #return f"({self.q}, {self.r})"
         #return f"({self.q}, {self.r}): {self.colour}; goal: {self.goal}"
     def __hash__(self):
         return hash((q, r))
@@ -46,7 +46,7 @@ class Hex:
                 if not g.get_colour():
                     goals_filtered.append(g)
 
-            self.goal = goals_filtered[0]
+            self.goal = goals_filtered
     @staticmethod
     def length(hex):
         return int((abs(hex.q) + abs(hex.r) + abs(hex.s))/2)
@@ -92,7 +92,7 @@ def move(a, b):
 
 def moves(a):
     moves = []
-    jumps = []
+    #jumps = []
 
     directions = [
         Hex(1, 0), Hex(1, -1), Hex(0, -1),
@@ -113,6 +113,8 @@ def moves(a):
             except:
                 continue
             if not jump.get_colour():
-                jumps.append({'to': jump, 'over': neighbour})
+                #jumps.append({'to': jump, 'over': neighbour})
+                moves.append(jump)
 
-    return {'moves': moves, 'jumps': jumps}
+    #return {'moves': moves, 'jumps': jumps}
+    return moves

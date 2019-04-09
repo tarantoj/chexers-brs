@@ -12,7 +12,7 @@ from queue import PriorityQueue
 import board
 
 
-def a_star_search(start, goal):
+def a_star_search(start, goals):
     frontier = PriorityQueue()
     frontier.put((0, start))
     came_from = {}
@@ -23,21 +23,23 @@ def a_star_search(start, goal):
     while not frontier.empty():
         current = frontier.get()[1]
 
-        if current == goal:
+        if current in goals:
+            end = current
             break
-        moves = board.moves(current)['moves']
-        jumps = board.moves(current)['jumps']
-        for j in jumps:
-            moves.append(j['to'])
-        for next in moves:
+        #moves = board.moves(current)['moves']
+        #jumps = board.moves(current)['jumps']
+        #for j in jumps:
+        #    moves.append(j['to'])
+        for next in board.moves(current):
             new_cost = cost_so_far[current] + 1
             if next not in cost_so_far or new_cost < cost_so_far[next]:
                 cost_so_far[next] = new_cost
-                priority = new_cost + next.distance(goal)
+                priority = new_cost + min([next.distance(goal) for goal in goals])
+                #priority = new_cost + min(next.distance(goal)
                 frontier.put((priority, next))
                 came_from[next] = current
 
-    return came_from, cost_so_far
+    return came_from, end
 
 def main():
     with open(sys.argv[1]) as file:
@@ -50,8 +52,8 @@ def main():
 
 
         for p in pieces:
-            came_from, cost_so_far = a_star_search(p, p.goal)
-            current = p.goal
+            came_from, end = a_star_search(p, p.goal)
+            current = end
             moves = []
             while current:
                 moves.append(current)
@@ -65,6 +67,8 @@ def main():
                     print(f"MOVE from ({n.q}, {n.r}) to ({m.q}, {m.r}).")
                 n = m
             print(f"EXIT from ({n.q}, {n.r}).")
+        
+        print_board(board.get_board(), debug=True)
 
 
 
