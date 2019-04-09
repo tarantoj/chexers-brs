@@ -22,7 +22,8 @@ class Hex:
     def __eq__(self, other):
         return self.q == other.q and self.r == other.r
     def __str__(self):
-        return self.colour
+        #return self.colour
+        return f"({self.q}, {self.r})"
         #return f"({self.q}, {self.r}): {self.colour}; goal: {self.goal}"
     def __hash__(self):
         return hash((q, r))
@@ -39,10 +40,13 @@ class Hex:
     def set_goal(self):
         if self.colour in ["red", "green", "blue"]:
             a = [get_tpiece(q, r) for (q, r) in goals[self.colour]]
-            self.goal = sorted(a, key=self.distance)
+            goals_sorted = sorted(a, key=self.distance)
+            goals_filtered = []
+            for g in goals_sorted:
+                if not g.get_colour():
+                    goals_filtered.append(g)
 
-
-
+            self.goal = goals_filtered[0]
     @staticmethod
     def length(hex):
         return int((abs(hex.q) + abs(hex.r) + abs(hex.s))/2)

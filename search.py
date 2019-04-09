@@ -18,15 +18,10 @@ def a_star_search(start, goal):
     came_from = {}
     cost_so_far = {}
     came_from[start] = None
-    start.f = 0
     cost_so_far[start] = 0
 
     while not frontier.empty():
         current = frontier.get()[1]
-
-#        print(f"current {current}")
-#        print(f"goal {goal}")
-#        print(f"start {start}")
 
         if current == goal:
             break
@@ -34,14 +29,10 @@ def a_star_search(start, goal):
         jumps = board.moves(current)['jumps']
         for j in jumps:
             moves.append(j['to'])
-        for next in board.moves(current)['moves']:
-#            print(f"next {next}")
-            #new_cost = cost_so_far[current] + 1
-            new_cost = current.f + 1
-            #if next not in cost_so_far or new_cost < cost_so_far[next]:
-            if not next.f or new_cost < next.f:
-                next.f = new_cost
-                #cost_so_far[next] = new_cost
+        for next in moves:
+            new_cost = cost_so_far[current] + 1
+            if next not in cost_so_far or new_cost < cost_so_far[next]:
+                cost_so_far[next] = new_cost
                 priority = new_cost + next.distance(goal)
                 frontier.put((priority, next))
                 came_from[next] = current
@@ -58,15 +49,21 @@ def main():
             board.set_piece(piece[0], piece[1], 'block')
 
         for p in pieces:
-            came_from, cost_so_far = a_star_search(p, p.goal[0])
-            print(came_from)
-            path = []
-            current = p.goal[0]
-            while current != p:
-                path.append(current)
+            came_from, cost_so_far = a_star_search(p, p.goal)
+            current = p.goal
+            moves = []
+            while current:
+                moves.append(current)
                 current = came_from[current]
-            print(path.reverse())
-        print_board(board.get_board(), debug=True)
+            mpves = moves.reverse()
+            n = moves[0]
+            for m in moves[1:]:
+                if m.distance(n) > 1:
+                    print(f"JUMP from ({n.q}, {n.r}) to ({m.q}, {m.r}).")
+                else:
+                    print(f"MOVE from ({n.q}, {n.r}) to ({m.q}, {m.r}).")
+                n = m
+            print(f"EXIT from ({n.q}, {n.r}).")
 
 
 
