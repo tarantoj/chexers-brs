@@ -8,20 +8,64 @@ Authors:
 
 import sys
 import json
+from queue import PriorityQueue
+import board
 
-goals = {
-    "red" : [(3, -3), (3, -2), (3, -1), (3, 0)],
-    "green" : [(0, -3), (-1, -2), (-2, -1), (-3, 0)],
-    "blue" : [(-3, 3), (-2, 3), (-1, 3), (0, 3)]
-}
+
+def a_star_search(start, goal):
+    frontier = PriorityQueue()
+    frontier.put((0, start))
+    came_from = {}
+    cost_so_far = {}
+    came_from[start] = None
+    cost_so_far[start] = 0
+
+    while not frontier.empty():
+        current = frontier.get()[1]
+
+        if current == goal:
+            break
+        moves = board.moves(current)['moves']
+        jumps = board.moves(current)['jumps']
+        for j in jumps:
+            moves.append(j['to'])
+        for next in moves:
+            new_cost = cost_so_far[current] + 1
+            if next not in cost_so_far or new_cost < cost_so_far[next]:
+                cost_so_far[next] = new_cost
+                priority = new_cost + next.distance(goal)
+                frontier.put((priority, next))
+                came_from[next] = current
+
+    return came_from, cost_so_far
 
 def main():
     with open(sys.argv[1]) as file:
         data = json.load(file)
-        print(goals)
+        pieces = []
+        for piece in data['pieces']:
+            pieces.append(board.set_piece(piece[0], piece[1], data['colour']))
+        for piece in data['blocks']:
+            board.set_piece(piece[0], piece[1], 'block')
 
-    # TODO: Search for and output winning sequence of moves
-    # ...
+        for p in pieces:
+            came_from, cost_so_far = a_star_search(p, p.goal)
+            current = p.goal
+            moves = []
+            while current:
+                moves.append(current)
+                current = came_from[current]
+            mpves = moves.reverse()
+            n = moves[0]
+            for m in moves[1:]:
+                if m.distance(n) > 1:
+                    print(f"JUMP from ({n.q}, {n.r}) to ({m.q}, {m.r}).")
+                else:
+                    print(f"MOVE from ({n.q}, {n.r}) to ({m.q}, {m.r}).")
+                n = m
+            print(f"EXIT from ({n.q}, {n.r}).")
+
+
 
 
 def print_board(board_dict, message="", debug=False, **kwargs):
