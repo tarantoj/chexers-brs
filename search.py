@@ -50,7 +50,6 @@ def main():
         for piece in data['pieces']:
             pieces.append(board.set_piece(piece[0], piece[1], data['colour']))
 
-
         for p in pieces:
             came_from, end = a_star_search(p, p.goal)
             current = end

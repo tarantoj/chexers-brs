@@ -107,7 +107,7 @@ def moves(a):
             continue
         if not neighbour.get_colour():
             moves.append(neighbour)
-        elif neighbour.get_colour() != a.get_colour():
+        elif neighbour.get_colour():
             try:
                 jump = get_piece(neighbour.add(direction))
             except:
