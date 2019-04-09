@@ -43,10 +43,11 @@ def main():
     with open(sys.argv[1]) as file:
         data = json.load(file)
         pieces = []
-        for piece in data['pieces']:
-            pieces.append(board.set_piece(piece[0], piece[1], data['colour']))
         for piece in data['blocks']:
             board.set_piece(piece[0], piece[1], 'block')
+        for piece in data['pieces']:
+            pieces.append(board.set_piece(piece[0], piece[1], data['colour']))
+
 
         for p in pieces:
             came_from, cost_so_far = a_star_search(p, p.goal)
@@ -55,7 +56,7 @@ def main():
             while current:
                 moves.append(current)
                 current = came_from[current]
-            mpves = moves.reverse()
+            moves.reverse()
             n = moves[0]
             for m in moves[1:]:
                 if m.distance(n) > 1:
