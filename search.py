@@ -83,7 +83,18 @@ def a_star_search(start, blocks, board, goals):
                 came_from[next[0]] = (current, next[1])
 
 
-    return came_from, cost_so_far
+    return came_from
+
+def pretty_print(steps, board_dict, blocks, colour):
+    print_board(board_dict)
+    time.sleep(1)
+    for step in steps:
+        board_dict = {key: colour for key in step[0]}
+        board_dict.update({key: 'block' for key in blocks})
+        print_board(board_dict)
+        time.sleep(1)
+        os.system('clear')
+
 
 def main():
     with open(sys.argv[1]) as file:
@@ -94,25 +105,20 @@ def main():
         goals = goals_global[colour]
         blocks = {tuple(x) for x in data['blocks']}
         start = frozenset(tuple(x) for x in data['pieces'])
-        end = frozenset()
         board_dict = {key: colour for key in start}
         board_dict.update({key: 'block' for key in blocks})
         board_dict.update({key: 'goal' for key in goals})
-        came_from, cost_so_far = a_star_search(start, blocks, board, goals)
+        came_from = a_star_search(start, blocks, board, goals)
         current = came_from[frozenset()]
         steps = []
         while current:
             steps.append(current)
             current = came_from[current[0]]
         steps.reverse()
-        print_board(board_dict)
-        time.sleep(1)
         for step in steps:
-            board_dict = {key: colour for key in step[0]}
-            board_dict.update({key: 'block' for key in blocks})
-            print_board(board_dict)
-            time.sleep(1)
-            os.system('clear')
+            print(step[1])
+        pretty_print(steps, board_dict, blocks, colour)
+
 
 def print_board(board_dict, message="", debug=False, **kwargs):
     """
