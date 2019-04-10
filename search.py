@@ -8,20 +8,115 @@ Authors:
 
 import sys
 import json
+from queue import PriorityQueue
+import os
+import time
 
-goals = {
-    "red" : [(3, -3), (3, -2), (3, -1), (3, 0)],
-    "green" : [(0, -3), (-1, -2), (-2, -1), (-3, 0)],
-    "blue" : [(-3, 3), (-2, 3), (-1, 3), (0, 3)]
+goals_global = {
+    "red" : {(3, -3), (3, -2), (3, -1), (3, 0)},
+    "green" : {(0, -3), (-1, -2), (-2, -1), (-3, 0)},
+    "blue" : {(-3, 3), (-2, 3), (-1, 3), (0, 3)}
 }
+
+def add(a, b):
+    return (a[0] + b[0], a[1] + b[1])
+
+
+def subtract(a, b):
+    return (a[0]- b[0], a[1] - b[1])
+
+def length(a):
+    return int((abs(a[0]) + abs(a[1]) + abs(-a[0]-a[1]))/2)
+
+def distance(a, b):
+    return length(subtract(a, b))
+
+
+def heuristic(state, goals):
+    h = 0
+    for piece in state:
+        h += min([distance(piece, goal) for goal in goals])
+    return h
+
+def actions(state, blocks, board, goals):
+    actions = []
+    directions = [(1, 0), (1, -1), (0, -1), (-1, 0), (-1, 1), (0, 1)]
+    for piece in state:
+        if piece in goals:
+            new_state = state.difference(set([piece]))
+            actions.append((new_state, f"EXIT from {piece}."))
+            continue
+        for direction in directions:
+            new = add(piece, direction)
+            if new in board:
+                if new in blocks | state:
+                    jump = add(new, direction)
+                    if jump not in blocks | state:
+                        new_state = state.difference(set([piece])).union(set([jump]))
+                        actions.append((new_state, f"JUMP from {piece} to {new}."))
+                else:
+                    new_state = state.difference(set([piece])).union(set([new]))
+                    actions.append((new_state, f"MOVE from {piece} to {new}."))
+    
+    return actions
+
+def a_star_search(start, blocks, board, goals):
+    frontier = PriorityQueue()
+    frontier.put((0, start))
+    came_from = {}
+    cost_so_far = {}
+    came_from[start] = None
+    cost_so_far[start] = 0
+
+    while not frontier.empty():
+        current = frontier.get()[1]
+
+        if current == set():
+            break
+
+        for next in actions(current, blocks, board, goals):
+            new_cost = cost_so_far[current] + 1
+            if next[0] not in cost_so_far or new_cost < cost_so_far[next[0]]:
+                cost_so_far[next[0]] = new_cost
+                priority = new_cost + heuristic(next[0], goals)
+                frontier.put((priority, next[0]))
+                came_from[next[0]] = (current, next[1])
+
+
+    return came_from, cost_so_far
+
+
+ 
 
 def main():
     with open(sys.argv[1]) as file:
         data = json.load(file)
-        print(goals)
+        colour = data['colour']
+        ran = range(-3, +3+1)
+        board = frozenset([(q,r) for q in ran for r in ran if -q-r in ran])
+        goals = goals_global[colour]
+        blocks = {tuple(x) for x in data['blocks']}
+        start = frozenset(tuple(x) for x in data['pieces'])
+        end = frozenset()
+        board_dict = {key: colour for key in start}
+        board_dict.update({key: 'block' for key in blocks})
+        board_dict.update({key: 'goal' for key in goals})
+        came_from, cost_so_far = a_star_search(start, blocks, board, goals)
+        current = came_from[frozenset()]
+        steps = []
+        while current:
+            steps.append(current)
+            current = came_from[current[0]]
+        steps.reverse()
+        print_board(board_dict)
+        time.sleep(1)
+        for step in steps:
+            board_dict = {key: colour for key in step[0]}
+            board_dict.update({key: 'block' for key in blocks})
+            print_board(board_dict)
+            time.sleep(1)
+            os.system('clear')
 
-    # TODO: Search for and output winning sequence of moves
-    # ...
 
 
 def print_board(board_dict, message="", debug=False, **kwargs):
