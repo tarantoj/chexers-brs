@@ -85,9 +85,6 @@ def a_star_search(start, blocks, board, goals):
 
     return came_from, cost_so_far
 
-
- 
-
 def main():
     with open(sys.argv[1]) as file:
         data = json.load(file)
@@ -116,8 +113,6 @@ def main():
             print_board(board_dict)
             time.sleep(1)
             os.system('clear')
-
-
 
 def print_board(board_dict, message="", debug=False, **kwargs):
     """
