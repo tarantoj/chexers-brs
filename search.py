@@ -20,18 +20,53 @@ goals_global = {
 
 
 def add(a, b):
+    """[summary]
+    
+    Arguments:
+        a {[type]} -- [description]
+        b {[type]} -- [description]
+    
+    Returns:
+        [type] -- [description]
+    """
     return (a[0] + b[0], a[1] + b[1])
 
 
 def subtract(a, b):
+    """[summary]
+    
+    Arguments:
+        a {[type]} -- [description]
+        b {[type]} -- [description]
+    
+    Returns:
+        [type] -- [description]
+    """
     return (a[0] - b[0], a[1] - b[1])
 
 
 def length(a):
+    """[summary]
+    
+    Arguments:
+        a {[type]} -- [description]
+    
+    Returns:
+        [type] -- [description]
+    """
     return int((abs(a[0]) + abs(a[1]) + abs(-a[0]-a[1]))/2)
 
 
 def distance(a, b):
+    """[summary]
+    
+    Arguments:
+        a {[type]} -- [description]
+        b {[type]} -- [description]
+    
+    Returns:
+        [type] -- [description]
+    """
     # return max(abs(a[0] - b[0]), abs(a[1] - b[1]), abs(abs(-a[0]-a[1]) - abs(-b[0]-b[1])))
     #print(f"a: {a}, b: {b}, dist: {length(subtract(a, b))}")
     return length(subtract(a, b))
@@ -44,10 +79,28 @@ def distance(a, b):
 
 
 def divup(n, d):
+    """[summary]
+    
+    Arguments:
+        n {[type]} -- [description]
+        d {[type]} -- [description]
+    
+    Returns:
+        [type] -- [description]
+    """
     return (n + d - 1) // d
 
 
 def heuristic(state, goals):
+    """[summary]
+    
+    Arguments:
+        state {[type]} -- [description]
+        goals {[type]} -- [description]
+    
+    Returns:
+        [type] -- [description]
+    """
     h = 0
     for piece in state:
         if piece in goals:
@@ -58,6 +111,15 @@ def heuristic(state, goals):
 
 
 def generate_directions(board, blocks):
+    """[summary]
+    
+    Arguments:
+        board {[type]} -- [description]
+        blocks {[type]} -- [description]
+    
+    Returns:
+        [type] -- [description]
+    """
     direction_dict = {}
     directions = [(1, 0), (1, -1), (0, -1), (-1, 0), (-1, 1), (0, 1)]
     valid_tiles = board.difference(blocks)
@@ -81,6 +143,16 @@ def generate_directions(board, blocks):
 
 
 def actions(state, goals, direction_dict):
+    """[summary]
+    
+    Arguments:
+        state {[type]} -- [description]
+        goals {[type]} -- [description]
+        direction_dict {[type]} -- [description]
+    
+    Returns:
+        [type] -- [description]
+    """
     actions = []
     for piece in state:
         if piece in goals:
@@ -106,6 +178,16 @@ def actions(state, goals, direction_dict):
 
 
 def a_star_search(start, goals, direction_dict):
+    """[summary]
+    
+    Arguments:
+        start {[type]} -- [description]
+        goals {[type]} -- [description]
+        direction_dict {[type]} -- [description]
+    
+    Returns:
+        [type] -- [description]
+    """
     frontier = []
     heapq.heappush(frontier, (0, start))
     came_from = {}
@@ -131,6 +213,14 @@ def a_star_search(start, goals, direction_dict):
 
 
 def pretty_print(steps, board_dict, blocks, colour):
+    """[summary]
+    
+    Arguments:
+        steps {[type]} -- [description]
+        board_dict {[type]} -- [description]
+        blocks {[type]} -- [description]
+        colour {[type]} -- [description]
+    """
     print_board(board_dict)
     time.sleep(1)
     for step in steps:
@@ -164,7 +254,7 @@ def main():
         steps.reverse()
         for step in steps:
             print(step[1])
-        #pretty_print(steps, board_dict, blocks, colour)
+        pretty_print(steps, board_dict, blocks, colour)
 
 
 def print_board(board_dict, message="", debug=False, **kwargs):
