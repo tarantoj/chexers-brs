@@ -119,9 +119,9 @@ def generate_heuristics(board, goals):
     """
     heuristic_dict = {}
     for piece in board:
-        h = 0
+        h = 1
         if piece in goals:
-            h += 1
+            pass
         else:
             h += min([divup(distance(piece, goal), 2) for goal in goals])
         heuristic_dict[piece] = h
