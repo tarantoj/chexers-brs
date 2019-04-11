@@ -21,11 +21,11 @@ goals_global = {
 
 def add(a, b):
     """[summary]
-    
+
     Arguments:
         a {[type]} -- [description]
         b {[type]} -- [description]
-    
+
     Returns:
         [type] -- [description]
     """
@@ -34,11 +34,11 @@ def add(a, b):
 
 def subtract(a, b):
     """[summary]
-    
+
     Arguments:
         a {[type]} -- [description]
         b {[type]} -- [description]
-    
+
     Returns:
         [type] -- [description]
     """
@@ -47,10 +47,10 @@ def subtract(a, b):
 
 def length(a):
     """[summary]
-    
+
     Arguments:
         a {[type]} -- [description]
-    
+
     Returns:
         [type] -- [description]
     """
@@ -59,11 +59,11 @@ def length(a):
 
 def distance(a, b):
     """[summary]
-    
+
     Arguments:
         a {[type]} -- [description]
         b {[type]} -- [description]
-    
+
     Returns:
         [type] -- [description]
     """
@@ -80,49 +80,67 @@ def distance(a, b):
 
 def divup(n, d):
     """[summary]
-    
+
     Arguments:
         n {[type]} -- [description]
         d {[type]} -- [description]
-    
+
     Returns:
         [type] -- [description]
     """
     return (n + d - 1) // d
 
 
-def heuristic(state, goals):
+def heuristic(state, heuristic_dict):
     """[summary]
-    
+
     Arguments:
         state {[type]} -- [description]
         goals {[type]} -- [description]
-    
+
     Returns:
         [type] -- [description]
     """
     h = 0
     for piece in state:
-        if piece in goals:
-            h += 1
-            continue
-        h += min([divup(distance(piece, goal), 2) for goal in goals])
+        h += heuristic_dict[piece]
     return h
 
 
-def generate_directions(board, blocks):
+def generate_heuristics(board, goals):
     """[summary]
-    
+
+    Arguments:
+        board {[type]} -- [description]
+        goals {[type]} -- [description]
+
+    Returns:
+        [type] -- [description]
+    """
+    heuristic_dict = {}
+    for piece in board:
+        h = 0
+        if piece in goals:
+            h += 1
+        else:
+            h += min([divup(distance(piece, goal), 2) for goal in goals])
+        heuristic_dict[piece] = h
+
+    return heuristic_dict
+
+
+def generate_directions(valid_tiles):
+    """[summary]
+
     Arguments:
         board {[type]} -- [description]
         blocks {[type]} -- [description]
-    
+
     Returns:
         [type] -- [description]
     """
     direction_dict = {}
     directions = [(1, 0), (1, -1), (0, -1), (-1, 0), (-1, 1), (0, 1)]
-    valid_tiles = board.difference(blocks)
     for tile in valid_tiles:
         move_directions = []
         jump_directions = []
@@ -144,12 +162,12 @@ def generate_directions(board, blocks):
 
 def actions(state, goals, direction_dict):
     """[summary]
-    
+
     Arguments:
         state {[type]} -- [description]
         goals {[type]} -- [description]
         direction_dict {[type]} -- [description]
-    
+
     Returns:
         [type] -- [description]
     """
@@ -177,14 +195,14 @@ def actions(state, goals, direction_dict):
     return actions
 
 
-def a_star_search(start, goals, direction_dict):
+def a_star_search(start, goals, direction_dict, heuristic_dict):
     """[summary]
-    
+
     Arguments:
         start {[type]} -- [description]
         goals {[type]} -- [description]
         direction_dict {[type]} -- [description]
-    
+
     Returns:
         [type] -- [description]
     """
@@ -205,7 +223,7 @@ def a_star_search(start, goals, direction_dict):
             new_cost = cost_so_far[current] + 1
             if next[0] not in cost_so_far or new_cost < cost_so_far[next[0]]:
                 cost_so_far[next[0]] = new_cost
-                priority = new_cost + heuristic(next[0], goals)
+                priority = new_cost + heuristic(next[0], heuristic_dict)
                 heapq.heappush(frontier, (priority, next[0]))
                 came_from[next[0]] = (current, next[1])
 
@@ -214,7 +232,7 @@ def a_star_search(start, goals, direction_dict):
 
 def pretty_print(steps, board_dict, blocks, colour):
     """[summary]
-    
+
     Arguments:
         steps {[type]} -- [description]
         board_dict {[type]} -- [description]
@@ -241,11 +259,14 @@ def main():
         blocks = {tuple(x) for x in data['blocks']}
         valid_goals = goals.difference(blocks)
         start = frozenset(tuple(x) for x in data['pieces'])
-        direction_dict = generate_directions(board, blocks)
+        valid_tiles = board.difference(blocks)
+        direction_dict = generate_directions(valid_tiles)
+        heuristic_dict = generate_heuristics(valid_tiles, goals)
         board_dict = {key: colour for key in start}
         board_dict.update({key: 'block' for key in blocks})
         board_dict.update({key: 'goal' for key in goals})
-        came_from = a_star_search(start, valid_goals, direction_dict)
+        came_from = a_star_search(
+            start, valid_goals, direction_dict, heuristic_dict)
         current = came_from[frozenset()]
         steps = []
         while current:
@@ -254,7 +275,7 @@ def main():
         steps.reverse()
         for step in steps:
             print(step[1])
-        pretty_print(steps, board_dict, blocks, colour)
+        #pretty_print(steps, board_dict, blocks, colour)
 
 
 def print_board(board_dict, message="", debug=False, **kwargs):
