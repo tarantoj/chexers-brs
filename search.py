@@ -13,25 +13,29 @@ import time
 import heapq
 
 goals_global = {
-    "red" : {(3, -3), (3, -2), (3, -1), (3, 0)},
-    "green" : {(0, -3), (-1, -2), (-2, -1), (-3, 0)},
-    "blue" : {(-3, 3), (-2, 3), (-1, 3), (0, 3)}
+    "red": {(3, -3), (3, -2), (3, -1), (3, 0)},
+    "green": {(0, -3), (-1, -2), (-2, -1), (-3, 0)},
+    "blue": {(-3, 3), (-2, 3), (-1, 3), (0, 3)}
 }
+
 
 def add(a, b):
     return (a[0] + b[0], a[1] + b[1])
 
 
 def subtract(a, b):
-    return (a[0]- b[0], a[1] - b[1])
+    return (a[0] - b[0], a[1] - b[1])
+
 
 def length(a):
     return int((abs(a[0]) + abs(a[1]) + abs(-a[0]-a[1]))/2)
 
+
 def distance(a, b):
-    #return max(abs(a[0] - b[0]), abs(a[1] - b[1]), abs(abs(-a[0]-a[1]) - abs(-b[0]-b[1])))
+    # return max(abs(a[0] - b[0]), abs(a[1] - b[1]), abs(abs(-a[0]-a[1]) - abs(-b[0]-b[1])))
     #print(f"a: {a}, b: {b}, dist: {length(subtract(a, b))}")
     return length(subtract(a, b))
+
 
 """ def distance(a, b):
     return int((abs(a[0] - b[0]) 
@@ -39,11 +43,19 @@ def distance(a, b):
                 + abs(a[1] - b[1])) / 2) """
 
 
+def divup(n, d):
+    return (n + d - 1) // d
+
+
 def heuristic(state, goals):
     h = 0
-    for piece in state.difference(goals):
-        h += min([distance(piece, goal) for goal in goals]) - 1
+    for piece in state:
+        if piece in goals:
+            h += 1
+            continue
+        h += min([divup(distance(piece, goal), 2) for goal in goals])
     return h
+
 
 def generate_directions(board, blocks):
     direction_dict = {}
@@ -68,7 +80,6 @@ def generate_directions(board, blocks):
     return direction_dict
 
 
-
 def actions(state, goals, direction_dict):
     actions = []
     for piece in state:
@@ -79,11 +90,15 @@ def actions(state, goals, direction_dict):
         for move, jump in direction_dict[piece]:
             if move:
                 if move not in state:
-                    new_state = state.difference(set([piece])).union(set([move]))
-                    actions.append((new_state, f"MOVE from {piece} to {move}."))
+                    new_state = state.difference(
+                        set([piece])).union(set([move]))
+                    actions.append(
+                        (new_state, f"MOVE from {piece} to {move}."))
                 elif jump and jump not in state:
-                    new_state = state.difference(set([piece])).union(set([jump]))
-                    actions.append((new_state, f"JUMP from {piece} to {jump}."))
+                    new_state = state.difference(
+                        set([piece])).union(set([jump]))
+                    actions.append(
+                        (new_state, f"JUMP from {piece} to {jump}."))
             elif jump and jump not in state:
                 new_state = state.difference(set([piece])).union(set([jump]))
                 actions.append((new_state, f"JUMP from {piece} to {jump}."))
@@ -114,6 +129,7 @@ def a_star_search(start, goals, direction_dict):
 
     return came_from
 
+
 def pretty_print(steps, board_dict, blocks, colour):
     print_board(board_dict)
     time.sleep(1)
@@ -130,7 +146,7 @@ def main():
         data = json.load(file)
         colour = data['colour']
         ran = range(-3, +3+1)
-        board = frozenset([(q,r) for q in ran for r in ran if -q-r in ran])
+        board = frozenset([(q, r) for q in ran for r in ran if -q-r in ran])
         goals = goals_global[colour]
         blocks = {tuple(x) for x in data['blocks']}
         valid_goals = goals.difference(blocks)
@@ -154,7 +170,7 @@ def main():
 def print_board(board_dict, message="", debug=False, **kwargs):
     """
     Helper function to print a drawing of a hexagonal board's contents.
-    
+
     Arguments:
 
     * `board_dict` -- dictionary with tuples for keys and anything printable
@@ -221,11 +237,11 @@ def print_board(board_dict, message="", debug=False, **kwargs):
     # prepare the provided board contents as strings, formatted to size.
     ran = range(-3, +3+1)
     cells = []
-    for qr in [(q,r) for q in ran for r in ran if -q-r in ran]:
+    for qr in [(q, r) for q in ran for r in ran if -q-r in ran]:
         if qr in board_dict:
             cell = str(board_dict[qr]).center(5)
         else:
-            cell = "     " # 5 spaces will fill a cell
+            cell = "     "  # 5 spaces will fill a cell
         cells.append(cell)
 
     # fill in the template to create the board drawing, then print!
