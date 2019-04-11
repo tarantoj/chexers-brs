@@ -104,11 +104,12 @@ def main():
         board = frozenset([(q,r) for q in ran for r in ran if -q-r in ran])
         goals = goals_global[colour]
         blocks = {tuple(x) for x in data['blocks']}
+        valid_goals = goals.difference(blocks)
         start = frozenset(tuple(x) for x in data['pieces'])
         board_dict = {key: colour for key in start}
         board_dict.update({key: 'block' for key in blocks})
         board_dict.update({key: 'goal' for key in goals})
-        came_from = a_star_search(start, blocks, board, goals)
+        came_from = a_star_search(start, blocks, board, valid_goals)
         current = came_from[frozenset()]
         steps = []
         while current:
@@ -117,7 +118,7 @@ def main():
         steps.reverse()
         for step in steps:
             print(step[1])
-        pretty_print(steps, board_dict, blocks, colour)
+        #pretty_print(steps, board_dict, blocks, colour)
 
 
 def print_board(board_dict, message="", debug=False, **kwargs):
