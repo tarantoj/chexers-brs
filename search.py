@@ -8,9 +8,9 @@ Authors:
 
 import sys
 import json
-from queue import PriorityQueue
 import os
 import time
+import heapq
 
 goals_global = {
     "red" : {(3, -3), (3, -2), (3, -1), (3, 0)},
@@ -38,50 +38,72 @@ def heuristic(state, goals):
         h += min([distance(piece, goal) for goal in goals])
     return h
 
-def actions(state, blocks, board, goals):
-    actions = []
+def generate_directions(board, blocks):
+    direction_dict = {}
     directions = [(1, 0), (1, -1), (0, -1), (-1, 0), (-1, 1), (0, 1)]
+    valid_tiles = board.difference(blocks)
+    for tile in valid_tiles:
+        move_directions = []
+        jump_directions = []
+        for direction in directions:
+            move_direction = add(tile, direction)
+            jump_direction = add(move_direction, direction)
+            if move_direction in valid_tiles:
+                move_directions.append(move_direction)
+            else:
+                move_directions.append(())
+            if jump_direction in valid_tiles:
+                jump_directions.append(jump_direction)
+            else:
+                jump_directions.append(())
+        direction_dict[tile] = list(zip(move_directions, jump_directions))
+
+    return direction_dict
+
+
+
+def actions(state, goals, direction_dict):
+    actions = []
     for piece in state:
         if piece in goals:
             new_state = state.difference(set([piece]))
             actions.append((new_state, f"EXIT from {piece}."))
             continue
-        for direction in directions:
-            new = add(piece, direction)
-            if new in board:
-                if new in blocks | state:
-                    jump = add(new, direction)
-                    if jump not in blocks | state:
-                        new_state = state.difference(set([piece])).union(set([jump]))
-                        actions.append((new_state, f"JUMP from {piece} to {new}."))
-                else:
-                    new_state = state.difference(set([piece])).union(set([new]))
-                    actions.append((new_state, f"MOVE from {piece} to {new}."))
-    
+        for move, jump in direction_dict[piece]:
+            if move:
+                if move not in state:
+                    new_state = state.difference(set([piece])).union(set([move]))
+                    actions.append((new_state, f"MOVE from {piece} to {move}."))
+                elif jump and jump not in state:
+                    new_state = state.difference(set([piece])).union(set([jump]))
+                    actions.append((new_state, f"JUMP from {piece} to {jump}."))
+            elif jump and jump not in state:
+                new_state = state.difference(set([piece])).union(set([jump]))
+                actions.append((new_state, f"JUMP from {piece} to {jump}."))
     return actions
 
-def a_star_search(start, blocks, board, goals):
-    frontier = PriorityQueue()
-    frontier.put((0, start))
+
+def a_star_search(start, goals, direction_dict):
+    frontier = []
+    heapq.heappush(frontier, (0, start))
     came_from = {}
     cost_so_far = {}
     came_from[start] = None
     cost_so_far[start] = 0
 
-    while not frontier.empty():
-        current = frontier.get()[1]
+    while frontier:
+        current = heapq.heappop(frontier)[1]
 
-        if current == set():
+        if current == frozenset():
             break
 
-        for next in actions(current, blocks, board, goals):
+        for next in actions(current, goals, direction_dict):
             new_cost = cost_so_far[current] + 1
             if next[0] not in cost_so_far or new_cost < cost_so_far[next[0]]:
                 cost_so_far[next[0]] = new_cost
                 priority = new_cost + heuristic(next[0], goals)
-                frontier.put((priority, next[0]))
+                heapq.heappush(frontier, (priority, next[0]))
                 came_from[next[0]] = (current, next[1])
-
 
     return came_from
 
@@ -106,10 +128,11 @@ def main():
         blocks = {tuple(x) for x in data['blocks']}
         valid_goals = goals.difference(blocks)
         start = frozenset(tuple(x) for x in data['pieces'])
+        direction_dict = generate_directions(board, blocks)
         board_dict = {key: colour for key in start}
         board_dict.update({key: 'block' for key in blocks})
         board_dict.update({key: 'goal' for key in goals})
-        came_from = a_star_search(start, blocks, board, valid_goals)
+        came_from = a_star_search(start, valid_goals, direction_dict)
         current = came_from[frozenset()]
         steps = []
         while current:
