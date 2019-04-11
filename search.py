@@ -29,13 +29,20 @@ def length(a):
     return int((abs(a[0]) + abs(a[1]) + abs(-a[0]-a[1]))/2)
 
 def distance(a, b):
+    #return max(abs(a[0] - b[0]), abs(a[1] - b[1]), abs(abs(-a[0]-a[1]) - abs(-b[0]-b[1])))
+    #print(f"a: {a}, b: {b}, dist: {length(subtract(a, b))}")
     return length(subtract(a, b))
+
+""" def distance(a, b):
+    return int((abs(a[0] - b[0]) 
+                + abs(a[0] + a[1] - b[0] - b[1])
+                + abs(a[1] - b[1])) / 2) """
 
 
 def heuristic(state, goals):
     h = 0
-    for piece in state:
-        h += min([distance(piece, goal) for goal in goals])
+    for piece in state.difference(goals):
+        h += min([distance(piece, goal) for goal in goals]) - 1
     return h
 
 def generate_directions(board, blocks):
