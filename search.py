@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 COMP30024 Artificial Intelligence, Semester 1 2019
 Solution to Project Part A: Searching
@@ -185,7 +186,7 @@ def a_star_search(start, goals, direction_dict, heuristic_dict):
                 heapq.heappush(frontier, (priority, next[0]))
                 came_from[next[0]] = (current, next[1])
 
-    print(nodes)
+    print(f"#nodes: {nodes}")
     return came_from
 
 
