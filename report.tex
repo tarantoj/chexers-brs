@@ -1,28 +1,63 @@
-\documentclass[a4paper,11pt,draft]{article}
+\documentclass[a4paper,10pt,draft]{article}
+\usepackage[margin=1in]{geometry}
 \title{
-    The University of Melbourne\\
-    COMP300024 Artifical Intelligence\\
-    Project Part A\\
-    Searching
+	{\small
+	The University of Melbourne\\
+	COMP300024 Artifical Intelligence\\[0.2em]
+	}
+    Project Part A\\[0.2em]
+    \small Searching\\
 }
 \author{
-    James Taranto: 640092\\
-    \and
-    Thomas Fowler: ******\\
+    James Taranto: 640092
 }
 
 \begin{document}
 \maketitle
 \section{The Search Problem}
 %How have you formulated the game as a search problem?
-The game has been reduced to finding a path for each piece to its respective goal destination
 %(You could discuss how you view the problem interms of states, actions, goal tests, and path costs, for example.)
+The game has been interpreted as follows:
+\begin{description}
+	\item[States] location of all pieces in play.
+	\item[Actions] legal moves that exist for a state.
+	\item[Goal tests] the empty set state, all pieces have left the board.
+	\item[Path costs] one for each turn taken (a move, jump or exit action).
+\end{description}
 \section{The Algorithm}
 %What search algorithm does your program use to solve this problem, and why did you choose this algorithm?
 %(You  could  comment  on  the  algorithm’s  efficiency,  completeness,  and  optimality.
-%You  could  explain  anyheuristics you may have developed to inform your search, including commenting on their admissibility.)
+%You  could  explain  any heuristics you may have developed to inform your search, including commenting on their admissibility.)
+A* was decided to be used for this problem for the following reasons:
+\begin{description}
+	\item[Efficiency] not a strong point for A*, storing every node in memory until a solution is found.
+		However, due to the relatively low complexity of the problem, it was deemed suitable for the task.
+		By generating a dictionary of heuristic values and available actions for all tiles on the board,
+		considerable time has been saved by reusing stored data rather than calculating at each expansion,
+		reducing my mean time for solving most test cases to less than a second.
+	\item[Completeness] it is complete and will always find a solution if one exists.
+	\item[Optimality] given the heuristic is admissible, it will always find the optimal solution.
+\end{description}
+\subsection{Heuristic}
+The heuristic used to inform A* is an adaptation of the manhattan distance to suit a hexagonal grid.
+It is then manipulated to return the shortest number of moves required to get a piece to the nearest exit and exiting.
+This is calculated with $\lceil\frac{1}{2}d(x)\rceil + 1$, where $d(x)$ is the adapted manhattan distance.
+The factor of $\frac{1}{2}$ represents the ability for pieces to jump, effectively halving the distance, except for when the distance required to travel is odd, so we take the ceiling of this.
+The constant, 1, is the cost of a piece taking a turn to exit from a goal.
+Finally, the heuristic for a given state is given as a sum of the heuristic for each piece to it's nearest goal.\\
+This means that the heuristic is admissible, since it never overestimates the cost of reaching the goal state.
+\\
 \section{Time and Space Requirements}
 %What features of the problem and your program’s input impact your program’s time and space requirements?
 %(You might discuss the branching factor and depth of your search tree, and explain any other features of theinput which affect the time and space complexity of your algorithm.)
+%what is the branching factor here? what is the relative error in h? how are they affected by the location of pieces and blocks?)
+Due to the nature of A* (all nodes kept in memory), an apt heuristic is fundamental in ensuring the space complexity is not excessive. 
+\begin{description}
+	\item[Branching factor] The branching factor is estimated to be $n\cdot \frac{184}{37} \approx n \cdot 4.97$, where $n$ is the number of pieces in play.
+		With a board of 37 tiles, there are 184 total moves for a piece.
+		This is of course changed by the input, increasing with $n$ and decreasing with the number of blocks.
+	\item[Depth] as the complexity of the input increases, the depth of the search tree increases exponentially
+	\item[Heuristic] since the heuristic calculates the lowest potential cost and, the relative error can be quite high, since it relies on a piece jumping almost all the way to the exit. 
+\end{description}
 
 \end{document}
