@@ -201,9 +201,9 @@ def pretty_print(steps, board_dict, blocks, colour):
         time.sleep(1)
         os.system('clear')
 
-
 def main():
     with open(sys.argv[1]) as file:
+        #Read file and initialise search parameters
         data = json.load(file)
         colour = data['colour']
         ran = range(-3, +3+1)
@@ -212,25 +212,36 @@ def main():
         blocks = {tuple(x) for x in data['blocks']}
         valid_goals = goals.difference(blocks)
         start = frozenset(tuple(x) for x in data['pieces'])
-        valid_tiles = board.difference(blocks)
-        direction_dict = generate_directions(valid_tiles)
-        heuristic_dict = generate_heuristics(valid_tiles, valid_goals)
-        """
-        board_dict = {key: colour for key in start}
-        board_dict.update({key: 'block' for key in blocks})
-        board_dict.update({key: 'goal' for key in goals})
-        """
-        came_from = a_star_search(
-            start, valid_goals, direction_dict, heuristic_dict)
-        current = came_from[frozenset()]
-        steps = []
-        while current:
-            steps.append(current)
-            current = came_from[current[0]]
-        steps.reverse()
-        for step in steps:
-            print(step[1])
-        #pretty_print(steps, board_dict, blocks, colour)
+        file.close()
+
+    #Pregenerate heuristic and direction data
+    valid_tiles = board.difference(blocks)
+    direction_dict = generate_directions(valid_tiles)
+    heuristic_dict = generate_heuristics(valid_tiles, valid_goals)
+
+    """
+    #initialise board_dict with read values to print with print_board
+    board_dict = {key: colour for key in start}
+    board_dict.update({key: 'block' for key in blocks})
+    board_dict.update({key: 'goal' for key in goals})
+    """
+
+    #Search
+    came_from = a_star_search(
+        start, valid_goals, direction_dict, heuristic_dict)
+
+    #Reconstruct path from search and print
+    current = came_from[frozenset()]
+    steps = []
+    while current:
+        steps.append(current)
+        current = came_from[current[0]]
+
+    steps.reverse()
+
+    for step in steps:
+        print(step[1])
+    #pretty_print(steps, board_dict, blocks, colour)
 
 
 def print_board(board_dict, message="", debug=False, **kwargs):
