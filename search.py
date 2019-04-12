@@ -173,7 +173,7 @@ def a_star_search(start, goals, direction_dict, heuristic_dict):
 
     while frontier:
         current = heapq.heappop(frontier)[1]
-        nodes +=1
+        nodes += 1
 
         if current == frozenset():
             break
@@ -201,9 +201,10 @@ def pretty_print(steps, board_dict, blocks, colour):
         time.sleep(1)
         os.system('clear')
 
+
 def main():
     with open(sys.argv[1]) as file:
-        #Read file and initialise search parameters
+        # Read file and initialise search parameters
         data = json.load(file)
         colour = data['colour']
         ran = range(-3, +3+1)
@@ -214,7 +215,7 @@ def main():
         start = frozenset(tuple(x) for x in data['pieces'])
         file.close()
 
-    #Pregenerate heuristic and direction data
+    # Pregenerate heuristic and direction data
     valid_tiles = board.difference(blocks)
     direction_dict = generate_directions(valid_tiles)
     heuristic_dict = generate_heuristics(valid_tiles, valid_goals)
@@ -226,11 +227,11 @@ def main():
     board_dict.update({key: 'goal' for key in goals})
     """
 
-    #Search
+    # Search
     came_from = a_star_search(
         start, valid_goals, direction_dict, heuristic_dict)
 
-    #Reconstruct path from search and print
+    # Reconstruct path from search and print
     current = came_from[frozenset()]
     steps = []
     while current:
