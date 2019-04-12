@@ -20,86 +20,39 @@ goals_global = {
 
 
 def add(a, b):
-    """[summary]
-
-    Arguments:
-        a {[type]} -- [description]
-        b {[type]} -- [description]
-
-    Returns:
-        [type] -- [description]
-    """
+    """Return the addition of two coordinate pairs"""
     return (a[0] + b[0], a[1] + b[1])
 
 
 def subtract(a, b):
-    """[summary]
-
-    Arguments:
-        a {[type]} -- [description]
-        b {[type]} -- [description]
-
-    Returns:
-        [type] -- [description]
-    """
+    """Return the subtraction of two coordinate pairs"""
     return (a[0] - b[0], a[1] - b[1])
 
 
 def length(a):
-    """[summary]
-
-    Arguments:
-        a {[type]} -- [description]
-
-    Returns:
-        [type] -- [description]
-    """
+    """Return the length of a coordinate"""
     return int((abs(a[0]) + abs(a[1]) + abs(-a[0]-a[1]))/2)
 
 
 def distance(a, b):
-    """[summary]
-
-    Arguments:
-        a {[type]} -- [description]
-        b {[type]} -- [description]
-
-    Returns:
-        [type] -- [description]
-    """
-    # return max(abs(a[0] - b[0]), abs(a[1] - b[1]), abs(abs(-a[0]-a[1]) - abs(-b[0]-b[1])))
-    #print(f"a: {a}, b: {b}, dist: {length(subtract(a, b))}")
+    """Return the distance between two coordinate pairs"""
     return length(subtract(a, b))
 
 
-""" def distance(a, b):
-    return int((abs(a[0] - b[0]) 
-                + abs(a[0] + a[1] - b[0] - b[1])
-                + abs(a[1] - b[1])) / 2) """
-
-
 def divup(n, d):
-    """[summary]
-
-    Arguments:
-        n {[type]} -- [description]
-        d {[type]} -- [description]
-
-    Returns:
-        [type] -- [description]
-    """
+    """Return the division of n by d, rounded up"""
     return (n + d - 1) // d
 
 
 def heuristic(state, heuristic_dict):
-    """[summary]
+    """The heuristic for a given state using heuristic_dict
 
     Arguments:
-        state {[type]} -- [description]
-        goals {[type]} -- [description]
+        state frozenset -- A set of coordinates
+        heuristic_dict dict -- A dictionary of coordinate keys,  heuristic values
 
     Returns:
-        [type] -- [description]
+        int -- heuristic of state
     """
     h = 0
     for piece in state:
@@ -108,14 +61,15 @@ def heuristic(state, heuristic_dict):
 
 
 def generate_heuristics(board, goals):
-    """[summary]
+    """Generates heuristic values for each tile in board, to the closest goal
+    in goals
 
     Arguments:
-        board {[type]} -- [description]
-        goals {[type]} -- [description]
+        board frozenset -- A set of coordinates describing the board
+        goals frozenset -- A set of coordinates describing the goals
 
     Returns:
-        [type] -- [description]
+        dict -- A dictionary of coordinate keys, heuristic values
     """
     heuristic_dict = {}
     for piece in board:
@@ -130,14 +84,14 @@ def generate_heuristics(board, goals):
 
 
 def generate_directions(valid_tiles):
-    """[summary]
+    """Generates a dictionary of potentially valid moves and jumps for a
+    coordinate
 
     Arguments:
-        board {[type]} -- [description]
-        blocks {[type]} -- [description]
+        valid_tiles frozenset -- A set of coordinates
 
     Returns:
-        [type] -- [description]
+        dict -- A dictionary of coordinate keys, moves, jumps tuple values
     """
     direction_dict = {}
     directions = [(1, 0), (1, -1), (0, -1), (-1, 0), (-1, 1), (0, 1)]
@@ -161,15 +115,16 @@ def generate_directions(valid_tiles):
 
 
 def actions(state, goals, direction_dict):
-    """[summary]
+    """Using a direction dictionary, returns possible actions for a state
+    with given goals
 
     Arguments:
-        state {[type]} -- [description]
-        goals {[type]} -- [description]
-        direction_dict {[type]} -- [description]
+        state frozenset -- A set of coordinates
+        goals frozenset -- A set of coordinates
+        direction_dict dict -- A dictionary of coordinate keys, moves, jumps tuple values
 
     Returns:
-        [type] -- [description]
+        list -- A list of possible new states as a tuple of the new state and action string to print
     """
     actions = []
     for piece in state:
@@ -196,15 +151,16 @@ def actions(state, goals, direction_dict):
 
 
 def a_star_search(start, goals, direction_dict, heuristic_dict):
-    """[summary]
+    """Implementation of the A* search algorithm
+    Adapted from https://www.redblobgames.com/pathfinding/a-star/implementation.html
 
     Arguments:
-        start {[type]} -- [description]
-        goals {[type]} -- [description]
-        direction_dict {[type]} -- [description]
+        start frozenset -- A set of coordinates
+        goals frozenset -- A set of coordinates
+        direction_dict dict -- A dictionary of coordinate keys, moves, jumps tuple values
 
     Returns:
-        [type] -- [description]
+        dict -- A linked list of tuple states pointing from the empty set to the starting set
     """
     frontier = []
     heapq.heappush(frontier, (0, start))
@@ -212,9 +168,11 @@ def a_star_search(start, goals, direction_dict, heuristic_dict):
     cost_so_far = {}
     came_from[start] = None
     cost_so_far[start] = 0
+    nodes = 0
 
     while frontier:
         current = heapq.heappop(frontier)[1]
+        nodes +=1
 
         if current == frozenset():
             break
@@ -227,20 +185,14 @@ def a_star_search(start, goals, direction_dict, heuristic_dict):
                 heapq.heappush(frontier, (priority, next[0]))
                 came_from[next[0]] = (current, next[1])
 
+    print(nodes)
     return came_from
 
 
 def pretty_print(steps, board_dict, blocks, colour):
-    """[summary]
-
-    Arguments:
-        steps {[type]} -- [description]
-        board_dict {[type]} -- [description]
-        blocks {[type]} -- [description]
-        colour {[type]} -- [description]
-    """
+    """Simple visualisation tool for personal use"""
     print_board(board_dict)
-    time.sleep(1)
+    time.sleep(3)
     for step in steps:
         board_dict = {key: colour for key in step[0]}
         board_dict.update({key: 'block' for key in blocks})
@@ -261,10 +213,12 @@ def main():
         start = frozenset(tuple(x) for x in data['pieces'])
         valid_tiles = board.difference(blocks)
         direction_dict = generate_directions(valid_tiles)
-        heuristic_dict = generate_heuristics(valid_tiles, goals)
+        heuristic_dict = generate_heuristics(valid_tiles, valid_goals)
+        """
         board_dict = {key: colour for key in start}
         board_dict.update({key: 'block' for key in blocks})
         board_dict.update({key: 'goal' for key in goals})
+        """
         came_from = a_star_search(
             start, valid_goals, direction_dict, heuristic_dict)
         current = came_from[frozenset()]
