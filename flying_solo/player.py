@@ -4,30 +4,71 @@ class ExamplePlayer:
         """
         This method is called once at the beginning of the game to initialise
         your player. You should use this opportunity to set up your own internal
-        representation of the game state, and any other information about the 
+        representation of the game state, and any other information about the
         game state you would like to maintain for the duration of the game.
 
-        The parameter colour will be a string representing the player your 
-        program will play as (Red, Green or Blue). The value will be one of the 
+        The parameter colour will be a string representing the player your
+        program will play as (Red, Green or Blue). The value will be one of the
         strings "red", "green", or "blue" correspondingly.
         """
-        # TODO: Set up state representation.
 
+        self.colour = colour
+        self.colours = ['red', 'green', 'blue']
+        self.STARTING_HEXES = {
+            'red': {(-3, 3), (-3, 2), (-3, 1), (-3, 0)},
+            'green': {(0, -3), (1, -3), (2, -3), (3, -3)},
+            'blue': {(3, 0), (2, 1), (1, 2), (0, 3)},
+        }
+        self.FINISHING_HEXES = {
+            'red': {(3, -3), (3, -2), (3, -1), (3, 0)},
+            'green': {(-3, 3), (-2, 3), (-1, 3), (0, 3)},
+            'blue': {(-3, 0), (-2, -1), (-1, -2), (0, -3)},
+        }
+        self.ADJACENT_STEPS = [(-1, +0), (+0, -1), (+1, -1),
+                               (+1, +0), (+0, +1), (-1, +1)]
+        self.MAX_TURNS = 256  # per player
+
+        ran = range(-3, +3+1)
+        self.hexes = {(q, r) for q in ran for r in ran if -q-r in ran}
+        self.board = {qr: ' ' for qr in self.hexes}
+        for c in self.colours:
+            for qr in self.STARTING_HEXES[c]:
+                self.board[qr] = c
+
+        self.nturns = 0
+        self.score = {'red': 0, 'green': 0, 'blue': 0}
+
+    def available_actions(self):
+        available_actions = []
+        for qr in self.hexes:
+            if self.board[qr] == self.colour:
+                if qr in self.FINISHING_HEXES[self.colour]:
+                    available_actions.append(("EXIT", qr))
+                q, r = qr
+                for dq, dr in self.ADJACENT_STEPS:
+                    for i, atype in [(1, "MOVE"), (2, "JUMP")]:
+                        tqr = q+dq*i, r+dr*i
+                        if tqr in self.hexes:
+                            if self.board[tqr] == ' ':
+                                available_actions.append((atype, (qr, tqr)))
+                                break
+        if not available_actions:
+            available_actions.append(("PASS", None))
+        return available_actions
 
     def action(self):
         """
-        This method is called at the beginning of each of your turns to request 
+        This method is called at the beginning of each of your turns to request
         a choice of action from your program.
 
-        Based on the current state of the game, your player should select and 
-        return an allowed action to play on this turn. If there are no allowed 
-        actions, your player must return a pass instead. The action (or pass) 
-        must be represented based on the above instructions for representing 
+        Based on the current state of the game, your player should select and
+        return an allowed action to play on this turn. If there are no allowed
+        actions, your player must return a pass instead. The action (or pass)
+        must be represented based on the above instructions for representing
         actions.
         """
         # TODO: Decide what action to take.
         return ("PASS", None)
-
 
     def update(self, colour, action):
         """
@@ -47,4 +88,21 @@ class ExamplePlayer:
         (or pass) for the player colour (your method does not need to validate 
         the action/pass against the game rules).
         """
-        # TODO: Update state representation in response to action.
+
+        atype, aargs = action
+        if atype == "MOVE":
+            qr_a, qr_b = aargs
+            self.board[qr_a] = ' '
+            self.board[qr_b] = colour
+        elif atype == "JUMP":
+            qr_a, qr_b = (q_a, r_a), (q_b, r_b) = aargs
+            qr_c = (q_a+q_b)//2, (r_a+r_b)//2
+            self.board[qr_a] = ' '
+            self.board[qr_b] = colour
+            self.board[qr_c] = colour
+        elif atype == "EXIT":
+            qr = aargs
+            self.board[qr] = ' '
+            self.score[colour] += 1
+        else:  # atype == "PASS":
+            pass
