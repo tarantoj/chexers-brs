@@ -106,3 +106,21 @@ class ExamplePlayer:
             self.score[colour] += 1
         else:  # atype == "PASS":
             pass
+
+    def snap(self):
+        """
+        Capture the current board state in a hashable way
+        (for repeated-state checking)
+        """
+        return (
+            # same colour pieces in the same positions
+            tuple((qr, p)
+                  for qr, p in self.board.items() if p in self.colours),
+            # on the same player's turn
+            self.nturns % 3,
+        )
+
+
+player = ExamplePlayer('red')
+print(player.available_actions())
+print(player.snap())
