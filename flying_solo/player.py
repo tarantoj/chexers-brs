@@ -1,4 +1,3 @@
-
 class ExamplePlayer:
     def __init__(self, colour):
         """
@@ -119,8 +118,3 @@ class ExamplePlayer:
             # on the same player's turn
             self.nturns % 3,
         )
-
-
-player = ExamplePlayer('red')
-print(player.available_actions())
-print(player.snap())
