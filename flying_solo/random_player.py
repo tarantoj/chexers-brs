@@ -1,4 +1,7 @@
-class ExamplePlayer:
+import random
+
+
+class RandomPlayer:
     def __init__(self, colour):
         """
         This method is called once at the beginning of the game to initialise
@@ -55,6 +58,30 @@ class ExamplePlayer:
             available_actions.append(("PASS", None))
         return available_actions
 
+    def snap_available_actions(self, snapped):
+        state, turn = snapped
+        colour = self.colours[turn]
+        available_actions = []
+        board = {qr: ' ' for qr in self.hexes}
+        for qr, c in state:
+            board[qr] = c
+
+        for qr in self.hexes:
+            if board[qr] == colour:
+                if qr in self.FINISHING_HEXES[colour]:
+                    available_actions.append(("EXIT", qr))
+                q, r = qr
+                for dq, dr in self.ADJACENT_STEPS:
+                    for i, atype in [(1, "MOVE"), (2, "JUMP")]:
+                        tqr = q+dq*i, r+dr*i
+                        if tqr in self.hexes:
+                            if board[tqr] == ' ':
+                                available_actions.append((atype, (qr, tqr)))
+                                break
+        if not available_actions:
+            available_actions.append(("PASS", None))
+        return available_actions
+
     def action(self):
         """
         This method is called at the beginning of each of your turns to request
@@ -67,24 +94,24 @@ class ExamplePlayer:
         actions.
         """
         # TODO: Decide what action to take.
-        return ("PASS", None)
+        return random.choice(self.available_actions())
 
     def update(self, colour, action):
         """
-        This method is called at the end of every turn (including your player’s 
-        turns) to inform your player about the most recent action. You should 
-        use this opportunity to maintain your internal representation of the 
+        This method is called at the end of every turn (including your player’s
+        turns) to inform your player about the most recent action. You should
+        use this opportunity to maintain your internal representation of the
         game state and any other information about the game you are storing.
 
         The parameter colour will be a string representing the player whose turn
-        it is (Red, Green or Blue). The value will be one of the strings "red", 
+        it is (Red, Green or Blue). The value will be one of the strings "red",
         "green", or "blue" correspondingly.
 
-        The parameter action is a representation of the most recent action (or 
+        The parameter action is a representation of the most recent action (or
         pass) conforming to the above in- structions for representing actions.
 
-        You may assume that action will always correspond to an allowed action 
-        (or pass) for the player colour (your method does not need to validate 
+        You may assume that action will always correspond to an allowed action
+        (or pass) for the player colour (your method does not need to validate
         the action/pass against the game rules).
         """
 
