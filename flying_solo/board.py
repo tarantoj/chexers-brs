@@ -1,5 +1,5 @@
 class Board:
-    colours = ["red", "green", "blue"]
+    COLOURS = ["red", "green", "blue"]
     STARTING_HEXES = {
         "red": {(-3, 3), (-3, 2), (-3, 1), (-3, 0)},
         "green": {(0, -3), (1, -3), (2, -3), (3, -3)},
@@ -12,12 +12,16 @@ class Board:
     }
     ADJACENT_STEPS = [(-1, +0), (+0, -1), (+1, -1), (+1, +0), (+0, +1), (-1, +1)]
     MAX_TURNS = 256  # per player
-    ran = range(-3, +3 + 1)
-    hexes = {(q, r) for q in ran for r in ran if -q - r in ran}
+    HEXES = {
+        (q, r)
+        for q in range(-3, +3 + 1)
+        for r in range(-3, +3 + 1)
+        if -q - r in range(-3, +3 + 1)
+    }
 
     def __init__(self):
-        self.board = {qr: " " for qr in Board.hexes}
-        for c in Board.colours:
+        self.board = {qr: " " for qr in Board.HEXES}
+        for c in Board.COLOURS:
             for qr in Board.STARTING_HEXES[c]:
                 self.board[qr] = c
 
@@ -33,7 +37,7 @@ class Board:
             list -- Available actions
         """
         available_actions = []
-        for qr in Board.hexes:
+        for qr in Board.HEXES:
             if board[qr] == colour:
                 if qr in Board.FINISHING_HEXES[colour]:
                     available_actions.append(("EXIT", qr))
@@ -41,7 +45,7 @@ class Board:
                 for dq, dr in Board.ADJACENT_STEPS:
                     for i, atype in [(1, "MOVE"), (2, "JUMP")]:
                         tqr = q + dq * i, r + dr * i
-                        if tqr in Board.hexes:
+                        if tqr in Board.HEXES:
                             if board[tqr] == " ":
                                 available_actions.append((atype, (qr, tqr)))
                                 break
