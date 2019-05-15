@@ -1,4 +1,5 @@
 from flying_solo.player import Player
+from flying_solo.board import Board
 import random
 
 
@@ -15,4 +16,4 @@ class RandomPlayer(Player):
         actions.
         """
         # TODO: Decide what action to take.
-        return random.choice(self.available_actions())
+        return random.choice(Board.available_actions(self.board, self.colour))
