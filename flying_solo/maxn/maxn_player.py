@@ -1,5 +1,6 @@
 from flying_solo.player import Player
 from flying_solo.board import Board
+from flying_solo.eval import evaluate
 from collections import defaultdict
 from copy import deepcopy
 import math
@@ -117,18 +118,8 @@ class Node:
         self.game_score = game_score
         self.player = player
         self.colour = Board.COLOURS[player]
-        self.eval_score = self.evaluate()
+        self.eval_score = evaluate(self.board, self.colour, self.game_score)
         self.action = action
-
-    def evaluate(self):
-        h = 0
-        for qr in self.board:
-            if self.board[qr] == self.colour:
-                h += eval_dict[self.colour][qr]
-
-        h += self.game_score[self.colour] * 8
-        # print(h)
-        return h
 
 
 class Tree:
