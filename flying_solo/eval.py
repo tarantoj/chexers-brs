@@ -1,4 +1,5 @@
 import math
+import sys
 
 
 def exit_dist(qr, colour):
@@ -24,11 +25,11 @@ def evaluate(board, colour, game_score):
         int -- evaluation of a board
     """
     h = 0
-    eval_map = [7, 6, 5, 4, 3, 2, 1]
+    eval_map = range(7, 0, -1)
 
     for qr in board:
         if board[qr] == colour:
-            h += eval_map[math.ceil(exit_dist(qr, colour) / 2) + 1]
-
+            dist = exit_dist(qr, colour)
+            h += eval_map[dist]
     h += game_score[colour] * 8
     return h
