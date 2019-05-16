@@ -22,18 +22,18 @@ import math
 """
 
 
-def max_n(node, player, depth=50, v_max=[-math.inf, -math.inf, -math.inf]):
+def max_n(node, player, depth=3):
     """Max^N algorithm
     
     Arguments:
         board {[type]} -- [description]
         colour {[type]} -- [description]
     """
-    print(depth)
     if depth == 0:
-        print("end")
-        return node
+        return (node.eval_score, None)
 
+    best_a = None
+    v_max = [-math.inf, -math.inf, -math.inf]
     player_colour = Board.COLOURS[player]
     for action in Board.available_actions(node.board, player_colour):
         new_game_score = deepcopy(node.game_score)
@@ -43,12 +43,14 @@ def max_n(node, player, depth=50, v_max=[-math.inf, -math.inf, -math.inf]):
         new_node = Node(new_board, node, new_game_score, new_player, action)
         node.children.append(new_node)
         # print(f"turn: {player_colour}, score: {new_node.eval_score}, depth: {depth}")
-        if new_node.eval_score >= v_max[player]:
-            new_v_max = v_max
-            new_v_max[player] = new_node.eval_score
+        v_new, x = max_n(new_node, new_player, depth - 1)
+        if v_new > v_max[new_player]:
+            v_max[new_player] = v_new
+            best_a = action
             # print(new_v_max)
             # print(new_node.action)
-            return max_n(new_node, new_player, depth - 1, new_v_max)
+
+    return (v_max[new_player], best_a)
 
 
 def subtract(a, b):
@@ -142,8 +144,8 @@ class MaxNPlayer(Player):
 
     def action(self):
         tree = Tree(self.board, self.score, self.player)
-        node = max_n(tree.root, self.player)
+        node, action = max_n(tree.root, self.player)
         """ curr = node.parent
         while curr.parent:
             curr = curr.parent """
-        return node
+        return action
