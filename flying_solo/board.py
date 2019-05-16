@@ -18,6 +18,7 @@ class Board:
         for r in range(-3, +3 + 1)
         if -q - r in range(-3, +3 + 1)
     }
+    PASS = ("PASS", None)
 
     def __init__(self):
         self.board = {qr: " " for qr in Board.HEXES}
@@ -50,7 +51,7 @@ class Board:
                                 available_actions.append((atype, (qr, tqr)))
                                 break
         if not available_actions:
-            available_actions.append(("PASS", None))
+            available_actions.append(Board.PASS)
         return available_actions
 
     @staticmethod
