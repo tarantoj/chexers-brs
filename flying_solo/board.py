@@ -104,3 +104,7 @@ class Board:
             score[colour] -= 1
         else:  # atype == "PASS":
             pass
+
+    @staticmethod
+    def next_colour(colour):
+        return Board.COLOURS[(Board.COLOURS.index(colour) + 1) % 3]
