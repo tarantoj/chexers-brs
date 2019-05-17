@@ -26,10 +26,16 @@ def evaluate(board, colour, game_score):
     """
     h = 0
     eval_map = range(7, 0, -1)
+    count = 0
 
     for qr in board:
         if board[qr] == colour:
             dist = exit_dist(qr, colour)
             h += eval_map[dist]
-    h += game_score[colour] * 8
+            count += 1
+    count = count + game_score[colour]
+    if count >= 4:
+        h += game_score[colour] * 30
+    else:
+        h += game_score[colour] * -1
     return h
