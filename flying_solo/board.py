@@ -65,6 +65,7 @@ class Board:
             action {tuple} -- action to apply
         """
         atype, aargs = action
+        captured = None
         if atype == "MOVE":
             qr_a, qr_b = aargs
             board[qr_a] = " "
@@ -74,10 +75,32 @@ class Board:
             qr_c = (q_a + q_b) // 2, (r_a + r_b) // 2
             board[qr_a] = " "
             board[qr_b] = colour
+            captured = board[qr_c]
             board[qr_c] = colour
         elif atype == "EXIT":
             qr = aargs
             board[qr] = " "
             score[colour] += 1
+        else:  # atype == "PASS":
+            pass
+        return captured
+
+    @staticmethod
+    def reverse_action(score, board, colour, action, captured):
+        atype, aargs = action
+        if atype == "MOVE":
+            qr_a, qr_b = aargs
+            board[qr_a] = colour
+            board[qr_b] = " "
+        elif atype == "JUMP":
+            qr_a, qr_b = (q_a, r_a), (q_b, r_b) = aargs
+            qr_c = (q_a + q_b) // 2, (r_a + r_b) // 2
+            board[qr_a] = colour
+            board[qr_b] = " "
+            board[qr_c] = captured
+        elif atype == "EXIT":
+            qr = aargs
+            board[qr] = colour
+            score[colour] -= 1
         else:  # atype == "PASS":
             pass
