@@ -14,7 +14,7 @@ def exit_dist(qr, colour):
 
 
 def evaluate(board, colour, game_score):
-    """Evaluate a board for a colour with a exited pieces
+    """Evaluate a board for a colour with exited pieces
     
     Arguments:
         board {dict} -- board dictionary
