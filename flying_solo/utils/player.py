@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from flying_solo.board import Board
+from flying_solo.utils.board import Board
 
 
 class Player(metaclass=ABCMeta):
@@ -35,7 +35,7 @@ class Player(metaclass=ABCMeta):
         must be represented based on the above instructions for representing
         actions.
         """
-        pass
+        return Board.PASS
 
     def update(self, colour, action):
         """
