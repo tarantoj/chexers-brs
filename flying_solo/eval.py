@@ -15,12 +15,12 @@ def exit_dist(qr, colour):
 
 def evaluate(board, colour, game_score):
     """Evaluate a board for a colour with exited pieces
-    
+
     Arguments:
         board {dict} -- board dictionary
         colour {string} -- player colour
         game_score {dict} -- scores of games
-    
+
     Returns:
         int -- evaluation of a board
     """
@@ -35,7 +35,7 @@ def evaluate(board, colour, game_score):
             count += 1
     count = count + game_score[colour]
     if count >= 4:
-        h += game_score[colour] * 30
+        h += game_score[colour] * 40
     else:
-        h += game_score[colour] * -1
+        h += game_score[colour] * -8
     return h

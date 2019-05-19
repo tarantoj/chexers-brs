@@ -1,3 +1,6 @@
+from operator import itemgetter
+
+
 class Board:
     COLOURS = ["red", "green", "blue"]
     STARTING_HEXES = {
@@ -10,7 +13,8 @@ class Board:
         "green": {(-3, 3), (-2, 3), (-1, 3), (0, 3)},
         "blue": {(-3, 0), (-2, -1), (-1, -2), (0, -3)},
     }
-    ADJACENT_STEPS = [(-1, +0), (+0, -1), (+1, -1), (+1, +0), (+0, +1), (-1, +1)]
+    ADJACENT_STEPS = [(-1, +0), (+0, -1), (+1, -1),
+                      (+1, +0), (+0, +1), (-1, +1)]
     MAX_TURNS = 256  # per player
     HEXES = {
         (q, r)
@@ -29,11 +33,11 @@ class Board:
     @staticmethod
     def available_actions(board, colour):
         """Return available actions for a colour on a board
-        
+
         Arguments:
             board {dict} -- dictionary representing board state
             colour {string} -- string representing player
-        
+
         Returns:
             list -- Available actions
         """
@@ -52,12 +56,13 @@ class Board:
                                 break
         if not available_actions:
             available_actions.append(Board.PASS)
+        Board.order_moves(available_actions)
         return available_actions
 
     @staticmethod
     def apply_action(score, board, colour, action):
         """Applies an action to a board
-        
+
         Arguments:
             score {dict} -- dictionary of scores
             board {dict} -- dictionary representing board state
@@ -108,3 +113,17 @@ class Board:
     @staticmethod
     def next_colour(colour):
         return Board.COLOURS[(Board.COLOURS.index(colour) + 1) % 3]
+
+    @staticmethod
+    def order_moves(actions):
+        def map(atype):
+            if atype == "JUMP":
+                return 1
+            elif atype == "MOVE":
+                return 2
+            elif atype == "EXIT":
+                return 0
+            elif atype == "PASS":
+                return 3
+
+        actions.sort(key=lambda x: map(x[0]))

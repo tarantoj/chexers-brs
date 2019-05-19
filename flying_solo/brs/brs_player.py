@@ -42,9 +42,17 @@ def brs(alpha, beta, score, board, maximising_colour, current_colour, depth):
         else:
             return -evaluate(board, maximising_colour, score)
 
+    for colour in Board.COLOURS:
+        if score[colour] == 4:
+            if colour == maximising_colour:
+                return -math.inf
+            else:
+                return math.inf
+
     if maximising_colour == current_colour:
         for action in Board.available_actions(board, maximising_colour):
-            captured = Board.apply_action(score, board, maximising_colour, action)
+            captured = Board.apply_action(
+                score, board, maximising_colour, action)
             v = -brs(
                 -beta,
                 -alpha,
@@ -54,7 +62,8 @@ def brs(alpha, beta, score, board, maximising_colour, current_colour, depth):
                 Board.next_colour(maximising_colour),
                 depth - 1,
             )
-            Board.reverse_action(score, board, maximising_colour, action, captured)
+            Board.reverse_action(
+                score, board, maximising_colour, action, captured)
             if v >= beta:
                 return v
             alpha = max(v, alpha)
@@ -73,7 +82,8 @@ def brs(alpha, beta, score, board, maximising_colour, current_colour, depth):
                         maximising_colour,
                         depth - 1,
                     )
-                    Board.reverse_action(score, board, colour, action, captured)
+                    Board.reverse_action(
+                        score, board, colour, action, captured)
                     if v >= beta:
                         return v
                     alpha = max(v, alpha)
@@ -133,4 +143,4 @@ class BRSPlayer(Player):
 
     def action(self):
 
-        return best_reply_search(self.score, self.board, self.colour, 4)
+        return best_reply_search(self.score, self.board, self.colour, 5)

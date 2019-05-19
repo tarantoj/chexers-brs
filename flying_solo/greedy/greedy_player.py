@@ -7,9 +7,10 @@ import math
 
 
 def best(board, colour, game_score):
-    best_a = ("PASS", None)
     h = 0
-    for action in Board.available_actions(board, colour):
+    actions = Board.available_actions(board, colour)
+    best_a = actions[0]
+    for action in actions:
         new_game_score = deepcopy(game_score)
         new_board = deepcopy(board)
         Board.apply_action(new_game_score, new_board, colour, action)
