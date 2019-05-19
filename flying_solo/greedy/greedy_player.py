@@ -1,6 +1,6 @@
 from flying_solo.player import Player
-from flying_solo.board import Board
-from flying_solo.eval import evaluate
+from flying_solo.utils.board import Board
+from flying_solo.utils.eval import evaluate
 from collections import defaultdict
 from copy import deepcopy
 import math
