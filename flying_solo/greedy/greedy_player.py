@@ -1,4 +1,4 @@
-from flying_solo.player import Player
+from flying_solo.utils.player import Player
 from flying_solo.utils.board import Board
 from flying_solo.utils.eval import evaluate
 from collections import defaultdict
