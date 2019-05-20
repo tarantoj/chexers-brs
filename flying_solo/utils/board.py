@@ -116,6 +116,18 @@ class Board:
 
     @staticmethod
     def order_moves(actions):
+        """Sort moves based on the type in the following order;
+        EXIT,
+        JUMP,
+        MOVE,
+        EXIT
+
+        Arguments:
+            actions {[tuple]} -- [list of actions]
+
+        Returns:
+            [type] -- [description]
+        """
         def map(atype):
             if atype == "JUMP":
                 return 1
@@ -127,3 +139,18 @@ class Board:
                 return 3
 
         actions.sort(key=lambda x: map(x[0]))
+
+    @staticmethod
+    def terminal_test(scores):
+        """Test if state is terminal
+
+        Arguments:
+            scores {[dict]} -- [Game score dictionary]
+
+        Returns:
+            [bool] -- [True if game is over]
+        """
+        for colour in Board.COLOURS:
+            if scores[colour] == 4:
+                return True
+        return False
