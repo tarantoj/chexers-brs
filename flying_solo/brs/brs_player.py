@@ -1,6 +1,6 @@
 from flying_solo.utils.player import Player
 from flying_solo.utils.board import Board
-from flying_solo.utils.eval import evaluate
+from flying_solo.eval import evaluate
 from referee.game import _TEMPLATE_NORMAL as TEMPLATE
 from collections import defaultdict
 from copy import deepcopy
@@ -51,7 +51,8 @@ def brs(alpha, beta, score, board, maximising_colour, current_colour, depth):
 
     if maximising_colour == current_colour:
         for action in Board.available_actions(board, maximising_colour):
-            captured = Board.apply_action(score, board, maximising_colour, action)
+            captured = Board.apply_action(
+                score, board, maximising_colour, action)
             v = -brs(
                 -beta,
                 -alpha,
@@ -61,7 +62,8 @@ def brs(alpha, beta, score, board, maximising_colour, current_colour, depth):
                 Board.next_colour(maximising_colour),
                 depth - 1,
             )
-            Board.reverse_action(score, board, maximising_colour, action, captured)
+            Board.reverse_action(
+                score, board, maximising_colour, action, captured)
             if v >= beta:
                 return v
             alpha = max(v, alpha)
@@ -80,7 +82,8 @@ def brs(alpha, beta, score, board, maximising_colour, current_colour, depth):
                         maximising_colour,
                         depth - 1,
                     )
-                    Board.reverse_action(score, board, colour, action, captured)
+                    Board.reverse_action(
+                        score, board, colour, action, captured)
                     if v >= beta:
                         return v
                     alpha = max(v, alpha)
