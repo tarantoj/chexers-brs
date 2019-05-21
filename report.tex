@@ -20,8 +20,8 @@
 The program is divided into three major components;
 \begin{description}
 	\item[Board] Defines internal game representation and methods to manipulate and evaluate game state.
-	\item[Player] An abstract class containing almost all code necessary for a player to function within specification. Including keeping track of and updating the player's representation of the game.
-	\item[Player Subclasses] \texttt{(brs, greedy, random)} Specific implementations of different player types. Best reply search, naive greedy and random, respectively. 
+	\item[Player] An abstract class containing all code necessary for a player to function within specification bar move selection. Including keeping track of and updating the player's representation of the game.
+	\item[Player Subclasses] \texttt{(brs, greedy, random)} Specific implementations of different player types, implements abstract method \texttt{Player.action} i.e.\ move selection. Best reply search, naive greedy and random, respectively. 
 \end{description} 
 \section{Approach}
 \subsection{Search Strategy}
