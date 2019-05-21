@@ -1,7 +1,10 @@
-from operator import itemgetter
+import math
 
 
 class Board:
+    """
+    Helper class for representing and manipulating a game board
+    """
     COLOURS = ["red", "green", "blue"]
     STARTING_HEXES = {
         "red": {(-3, 3), (-3, 2), (-3, 1), (-3, 0)},
@@ -15,7 +18,6 @@ class Board:
     }
     ADJACENT_STEPS = [(-1, +0), (+0, -1), (+1, -1),
                       (+1, +0), (+0, +1), (-1, +1)]
-    MAX_TURNS = 256  # per player
     HEXES = {
         (q, r)
         for q in range(-3, +3 + 1)
@@ -25,6 +27,9 @@ class Board:
     PASS = ("PASS", None)
 
     def __init__(self):
+        """
+        Initialise internal board representation
+        """
         self.board = {qr: " " for qr in Board.HEXES}
         for c in Board.COLOURS:
             for qr in Board.STARTING_HEXES[c]:
@@ -33,6 +38,9 @@ class Board:
     @staticmethod
     def available_actions(board, colour):
         """Return available actions for a colour on a board
+
+        Modified from the supplied referee code
+
 
         Arguments:
             board {dict} -- dictionary representing board state
@@ -56,18 +64,21 @@ class Board:
                                 break
         if not available_actions:
             available_actions.append(Board.PASS)
-        Board.order_moves(available_actions)
         return available_actions
 
     @staticmethod
     def apply_action(score, board, colour, action):
         """Applies an action to a board
 
+        Modified from the supplied referee code
+
         Arguments:
-            score {dict} -- dictionary of scores
-            board {dict} -- dictionary representing board state
-            colour {string} -- player to apply action to
-            action {tuple} -- action to apply
+            score {dict} -- Dictionary of scores
+            board {dict} -- Dictionary representing board state
+            colour {string} -- Player to apply action to
+            action {tuple} -- Action to apply
+        Returns:
+            string -- Colour of captured piece for reversing action
         """
         atype, aargs = action
         captured = None
@@ -92,6 +103,17 @@ class Board:
 
     @staticmethod
     def reverse_action(score, board, colour, action, captured):
+        """Reverse an action applied to board
+
+        Modified from the supplied referee code
+
+        Arguments:
+            score {dict} -- Dictionary of scores
+            board {dict} -- Dictionary representing board state
+            colour {string} -- Player to apply action to
+            action {tuple} -- Action to apply
+            captured {string} -- If action to reverse was a capture, the colour of the captured piece to restore
+        """
         atype, aargs = action
         if atype == "MOVE":
             qr_a, qr_b = aargs
@@ -111,46 +133,85 @@ class Board:
             pass
 
     @staticmethod
-    def next_colour(colour):
-        return Board.COLOURS[(Board.COLOURS.index(colour) + 1) % 3]
-
-    @staticmethod
-    def order_moves(actions):
-        """Sort moves based on the type in the following order;
-        EXIT,
-        JUMP,
-        MOVE,
-        EXIT
-
-        Arguments:
-            actions {[tuple]} -- [list of actions]
-
-        Returns:
-            [type] -- [description]
-        """
-        def map(atype):
-            if atype == "JUMP":
-                return 1
-            elif atype == "MOVE":
-                return 2
-            elif atype == "EXIT":
-                return 0
-            elif atype == "PASS":
-                return 3
-
-        actions.sort(key=lambda x: map(x[0]))
-
-    @staticmethod
     def terminal_test(scores):
         """Test if state is terminal
 
         Arguments:
-            scores {[dict]} -- [Game score dictionary]
+            scores {dict} -- Game score dictionary
 
         Returns:
-            [bool] -- [True if game is over]
+            bool -- True if game is over
         """
         for colour in Board.COLOURS:
             if scores[colour] == 4:
                 return True
         return False
+
+    @staticmethod
+    def exit_dist(qr, colour):
+        """Distance a given piece is from exiting
+
+        Arguments:
+            qr {tuple} -- Tuple representing piece
+            colour {string} -- Colour of piece
+
+        Returns:
+            int -- Distance from exit
+        """
+        q, r = qr
+        if colour == "red":
+            return 3 - q
+        if colour == "green":
+            return 3 - r
+        if colour == "blue":
+            return 3 - (-q - r)
+
+    @staticmethod
+    def evaluate(board, colour, scores):
+        """State evaluation function
+
+        Arguments:
+            board {dict} -- Board to evaluate
+            colour {string} -- Player persepective to evaluate from
+            scores {dict} -- Score of the state to evaluate
+
+        Returns:
+            float -- Score of the state
+        """
+        self_score = scores[colour]
+        self_count = scores[colour]
+        others_score = 0
+        others_count = 0
+        for c in Board.COLOURS:
+            if c != colour:
+                others_count += scores[c]
+                others_score += scores[c]
+
+        self_distances = 0
+        others_distances = 0
+        pieces = set()
+        for qr in board:
+            if board[qr] != " ":
+                if board[qr] == colour:
+                    pieces.add(qr)
+                    self_count += 1
+                    self_distances += math.sqrt(
+                        (abs(Board.exit_dist(qr, board[qr]) - 6)))
+                else:
+                    others_distances += math.sqrt(
+                        (abs(Board.exit_dist(qr, board[qr]) - 6)))
+                    others_count += 1
+        adjacent_bonus = 0
+        for q, r in pieces:
+            for dq, dr in Board.ADJACENT_STEPS:
+                tqr = (q+dq, r+dr)
+                if tqr in pieces:
+                    adjacent_bonus += 1
+        score_weight = 100 if (self_count-others_count) <= 0 else 10000
+        count_weight = 1000
+        distance_weight = 1
+        adjacent_weight = 10
+        return score_weight * (self_score - others_score) +\
+            count_weight * (self_count - others_count) +\
+            distance_weight * (self_distances - others_distances) +\
+            adjacent_weight * (adjacent_bonus)
