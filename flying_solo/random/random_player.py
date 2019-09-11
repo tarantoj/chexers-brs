@@ -1,5 +1,5 @@
-from flying_solo.player import Player
-from flying_solo.board import Board
+from flying_solo.utils.player import Player
+from flying_solo.utils.board import Board
 import random
 
 

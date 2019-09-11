@@ -1,143 +1,97 @@
 from flying_solo.utils.player import Player
 from flying_solo.utils.board import Board
-from flying_solo.utils.eval import evaluate
-from referee.game import _TEMPLATE_NORMAL as TEMPLATE
-from collections import defaultdict
-from copy import deepcopy
 import math
-import signal
-import sys
-import random
-
-DISPLAY = {  # something 5 characters wide for each colour:
-    "red": " \033[1m(\033[91mR\033[0m\033[1m)\033[0m ",
-    "green": " \033[1m(\033[92mG\033[0m\033[1m)\033[0m ",
-    "blue": " \033[1m(\033[94mB\033[0m\033[1m)\033[0m ",
-    " ": "     ",
-}
-
-history = {}
 
 
-def print_board(score, board):
-    cells = []
-    ran = range(-3, +3 + 1)
-    for qr in [(q, r) for q in ran for r in ran if -q - r in ran]:
-        cells.append(DISPLAY[board[qr]])
-    print(TEMPLATE.format(score, *cells))
+def brs(alpha, beta, board, score, player, maximising_player, eval_fn, depth):
+    """Best Reply Search
 
+    Schadd, Maarten PD, and Mark HM Winands. "Best reply search for multiplayer games." IEEE Transactions on Computational Intelligence and AI in Games 3.1 (2011): 57-66.
 
-def handler(signum, frame):
-    raise TimeoutError
+    https://dke.maastrichtuniversity.nl/m.winands/documents/BestReplySearch.pdf
 
+    Arguments:
+        alpha {float} -- Alpha value
+        beta {float} -- Beta value
+        board {dict} -- Dictionary representation of the board
+        score {dict} -- Dictionary representation of the scores
+        player {string} -- Current player
+        maximising_player {string} -- Player to search for
+        eval_fn {function} -- State evaluation function
+        depth {int} -- Depth to search to
 
-def terminal_test(node):
-    raise NotImplementedError
+    Returns:
+        tuple -- value, action tuple
+    """
 
+    if Board.terminal_test(score) or depth == 0:
+        sign = +1 if player == maximising_player else -1
+        return sign * eval_fn(board, maximising_player, score), None
 
-def brs(alpha, beta, score, board, maximising_colour, current_colour, depth):
-    if depth <= 0:
-        if maximising_colour == current_colour:
-            return evaluate(board, maximising_colour, score)
-        else:
-            return -evaluate(board, maximising_colour, score)
-
-    for colour in Board.COLOURS:
-        if score[colour] == 4:
-            if colour == maximising_colour:
-                return -math.inf
-            else:
-                return math.inf
-
-    if maximising_colour == current_colour:
-        for action in Board.available_actions(board, maximising_colour):
-            captured = Board.apply_action(score, board, maximising_colour, action)
-            v = -brs(
-                -beta,
-                -alpha,
-                score,
-                board,
-                maximising_colour,
-                Board.next_colour(maximising_colour),
-                depth - 1,
-            )
-            Board.reverse_action(score, board, maximising_colour, action, captured)
-            if v >= beta:
-                return v
-            alpha = max(v, alpha)
-
-    else:
-        for colour in Board.COLOURS:
-            if colour != maximising_colour:
-                for action in Board.available_actions(board, colour):
-                    captured = Board.apply_action(score, board, colour, action)
-                    v = -brs(
-                        -beta,
-                        -alpha,
-                        score,
-                        board,
-                        maximising_colour,
-                        maximising_colour,
-                        depth - 1,
-                    )
-                    Board.reverse_action(score, board, colour, action, captured)
-                    if v >= beta:
-                        return v
-                    alpha = max(v, alpha)
-
-    return alpha
-
-
-def best_reply_search(score, board, colour, depth):
-    # best_a = None
-    best_val = -math.inf
-    best_actions = defaultdict(list)
-    for action in Board.available_actions(board, colour):
-        captured = Board.apply_action(score, board, colour, action)
-        v = -brs(
-            -math.inf,
-            math.inf,
-            score,
-            board,
-            colour,
-            Board.next_colour(colour),
-            depth - 1,
-        )
-        # print_board(v, board)
-        Board.reverse_action(score, board, colour, action, captured)
-        if v >= best_val:
-            best_actions[v].append(action)
-            # best_a = action
-            best_val = v
-    return random.choice(best_actions[best_val])
-
-
-def ids(score, board, colour, timelimit):
-    signal.signal(signal.SIGALRM, handler)
-    signal.alarm(timelimit)
     best_a = None
-    depth = 1
-    try:
-        while True:
-            best_a = best_reply_search(score, board, colour, depth)
-            depth += 1
-    except Exception as ex:
-        print(ex)
+    best_v = -math.inf
 
-    return best_a
+    actions = []
+    if player == maximising_player:
+        # Search maximising players moves
+        actions.extend([(maximising_player, a)
+                        for a in Board.available_actions(board, maximising_player)])
+    else:
+        # Search other players moves
+        for colour in Board.COLOURS:
+            if colour != maximising_player:
+                actions.extend([(colour, a)
+                                for a in Board.available_actions(board, colour)])
+
+    def map(atype):
+        if atype == "EXIT":
+            return 0
+        elif atype == "JUMP":
+            return 1
+        elif atype == "MOVE":
+            return 2
+        elif atype == "PASS":
+            return 3
+
+    actions.sort(key=lambda x: map(x[1][0]))  # Naive move ordering
+
+    for colour, action in actions:
+        captured = Board.apply_action(score, board, colour, action)
+
+        if depth == 5 and score[maximising_player] == 4:
+            return (0, action)  # Early exit if game won this turn
+
+        next_player = maximising_player if colour != maximising_player else ""
+
+        v, _ = brs(-beta, -alpha, board, score,
+                   next_player, maximising_player, eval_fn, depth - 1)
+
+        Board.reverse_action(score, board, colour, action, captured)
+
+        curr_v = -v
+        if curr_v > best_v:
+            best_v = curr_v
+            best_a = action
+
+        alpha = max(alpha, curr_v)
+        if alpha >= beta:
+            break
+
+    return best_v, best_a
 
 
 class BRSPlayer(Player):
-    MIN = -1
+    DEPTH = 5
 
     def __init__(self, colour):
         super().__init__(colour)
-        self.player = Board.COLOURS.index(colour)
-
-    @staticmethod
-    def snap(board):
-        return ((qr, p) for qr, p in board.items() if p in Board.COLOURS)
 
     def action(self):
+        """Returns best next action, as determined by a BRSPlayer.DEPTH limited best reply search
 
-        return best_reply_search(self.score, self.board, self.colour, 5)
+        Returns:
+            tuple -- Chosen action
+        """
+        _, a = brs(-math.inf, math.inf, self.board,
+                   self.score, self.colour, self.colour, Board.evaluate, BRSPlayer.DEPTH)
+        return a

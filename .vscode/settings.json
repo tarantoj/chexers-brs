@@ -2,4 +2,9 @@
     "python.linting.pylintEnabled": true,
     "python.linting.enabled": true,
     "editor.formatOnSave": true,
+    "cSpell.words": [
+        "memoisation",
+        "negamax",
+        "recurses"
+    ],
 }

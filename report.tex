@@ -1,63 +1,54 @@
 \documentclass[a4paper,10pt,draft]{article}
 \usepackage[margin=1in]{geometry}
+\usepackage{cite}
+\usepackage{url}
 \title{
 	{\small
 	The University of Melbourne\\
-	COMP300024 Artifical Intelligence\\[0.2em]
+	COMP300024 Artificial Intelligence\\[0.2em]
 	}
-    Project Part A\\[0.2em]
-    \small Searching\\
+    Project Part B\\[0.2em]
+    \small Playing the Game\\
 }
 \author{
-    James Taranto: 640092
+    James Taranto: 640092\\Flying Solo
 }
 
 \begin{document}
 \maketitle
-\section{The Search Problem}
-%How have you formulated the game as a search problem?
-%(You could discuss how you view the problem interms of states, actions, goal tests, and path costs, for example.)
-The game has been interpreted as follows:
+\section{Program Structure}
+The program is divided into three major components;
 \begin{description}
-	\item[States] location of all pieces in play.
-	\item[Actions] legal moves that exist for a state.
-	\item[Goal tests] the empty set state, all pieces have left the board.
-	\item[Path costs] one for each turn taken (a move, jump or exit action).
-\end{description}
-\section{The Algorithm}
-%What search algorithm does your program use to solve this problem, and why did you choose this algorithm?
-%(You  could  comment  on  the  algorithm’s  efficiency,  completeness,  and  optimality.
-%You  could  explain  any heuristics you may have developed to inform your search, including commenting on their admissibility.)
-A* was decided to be used for this problem for the following reasons:
+	\item[Board] Defines internal game representation and methods to manipulate and evaluate game state.
+	\item[Player] An abstract class containing all code necessary for a player to function within specification bar move selection. Including keeping track of and updating the player's representation of the game.
+	\item[Player Subclasses] \texttt{(brs, greedy, random)} Specific implementations of different player types, implements abstract method \texttt{Player.action} i.e.\ move selection. Best reply search, naive greedy and random, respectively. 
+\end{description} 
+\section{Approach}
+\subsection{Search Strategy}
+My program uses best reply search,\cite{schadd2011best} an adaptation of negamax with alpha-beta pruning to $n$-players. Best reply search modifies the search tree from $n$-players to two, by collapsing the moves of the opposing players into a singular super-player. The search alternates between the moves for the root, maximising player and the moves for both opposing players. This results in a higher average branching factor and illegal board configurations due to effectively submitting a pass for a minimising player, but effectively increases the search depth compared to paranoid and max$^n$ algorithms.
+\subsection{Evaluation Function}
+The evaluation function consists of four parts weighted by decreasing factors of 10;
 \begin{description}
-	\item[Efficiency] not a strong point for A*, storing every node in memory until a solution is found.
-		However, due to the relatively low complexity of the problem, it was deemed suitable for the task.
-		By generating a dictionary of heuristic values and available actions for all tiles on the board,
-		considerable time has been saved by reusing stored data rather than calculating at each expansion,
-		reducing my mean time for solving most test cases to less than a second.
-	\item[Completeness] it is complete and will always find a solution if one exists.
-	\item[Optimality] given the heuristic is admissible, it will always find the optimal solution.
+	\item[Count] The amount of pieces on and off board, controlled by the root player, subtracted by the other players combined. Motivates the player to stay alive.
+	\item[Score] The current score of the root player, subtracted by the combined score of the other players. Motivates the player exit.
+	\item[Adjacent Bonus] A bonus for each piece of the root player next to another of it's own pieces. Motivates the player to keep pieces closer together, to inhibit losing control of pieces.
+	\item[Distance] The sum of inverse square roots of the distance to the nearest exit for the root player, subtracted by the other players combined. The inverse is taken so that closer to the exit means a higher score, and the square root so that moving more pieces towards the exit is worth more than moving a single piece towards the exit. Motivates the player to move closer to the exit.
 \end{description}
-\subsection{Heuristic}
-The heuristic used to inform A* is an adaptation of the manhattan distance to suit a hexagonal grid.
-It is then manipulated to return the shortest number of moves required to get a piece to the nearest exit and exiting.
-This is calculated with $\lceil\frac{1}{2}d(x)\rceil + 1$, where $d(x)$ is the adapted manhattan distance.
-The factor of $\frac{1}{2}$ represents the ability for pieces to jump, effectively halving the distance, except for when the distance required to travel is odd, so we take the ceiling of this.
-The constant, 1, is the cost of a piece taking a turn to exit from a goal.
-Finally, the heuristic for a given state is given as a sum of the heuristic for each piece to it's nearest goal.\\
-This means that the heuristic is admissible, since it never overestimates the cost of reaching the goal state.
-\\
-\section{Time and Space Requirements}
-%What features of the problem and your program’s input impact your program’s time and space requirements?
-%(You might discuss the branching factor and depth of your search tree, and explain any other features of theinput which affect the time and space complexity of your algorithm.)
-%what is the branching factor here? what is the relative error in h? how are they affected by the location of pieces and blocks?)
-Due to the nature of A* (all nodes kept in memory), an apt heuristic is fundamental in ensuring the space complexity is not excessive. 
-\begin{description}
-	\item[Branching factor] The branching factor is estimated to be $n\cdot \frac{184}{37} \approx n \cdot 4.97$, where $n$ is the number of pieces in play.
-		With a board of 37 tiles, there are 184 total moves for a piece.
-		This is of course changed by the input, increasing with $n$ and decreasing with the number of blocks.
-	\item[Depth] as the complexity of the input increases, the depth of the search tree increases exponentially
-	\item[Heuristic] since the heuristic calculates the lowest potential cost and, the relative error can be quite high, since it relies on a piece jumping almost all the way to the exit. 
-\end{description}
+Note, the factor of \textbf{Score} is increased by a factor of 100, to take precedence over \textbf{Count}, when the root player controls a majority of pieces. 
+\section{Effectiveness}
+Compared to max$^n$ and paranoid, best reply search performed better in the majority of cases. Searching to a greater depth was also typically much faster. Winning performance however was mostly bound by the strength of the evaluation function, as expected. Features and feature weights were determined by hand, manipulated after observation of performance against other player modules \texttt{(random, greedy)} and other teams on the battleground.
+\section{Discussion}
+\subsection{Optimisation}
+\subsubsection{Algorithm}
+To reduce the number of nodes expanded, best reply search utilises alpha-beta pruning. To further reduce nodes expanded, rudimentary move ordering was used, sorting the moves to explore by their type, in the order \texttt{(EXIT, JUMP, MOVE, PASS)}, reasoning that exits prevail over jumps, jumps over moves and moves over passes.\\
+Also included is an early exit clause on a game-winning move found, telling the program to return that move instead of searching through all possible ways to win.
+\subsubsection{Memory}
+To reduce the memory consumption of the program, the search algorithm makes and un-makes moves to the player's state representation as it recurses through the tree, resulting in the program typically using only around \texttt{1.5 MiB}.\\
+However, this limits the ability to perform iterative deepening, due to potentially leading to invalid boards without making copies of the board representation. Although implementing iterative deepening with a time limit was deemed inappropriate, as the time limit specified is not per turn. Subsequently, memoisation using a transposition table was also deemed unsuitable.
+\subsubsection{Time}
+Making and un-making moves before and after each recursive call also served to reduce the time consumption of the program. Another consideration to reduce the time consumption of the program was the control flow and data structures used in the evaluation function. The function was designed to only loop through the board once, gathering most of the data it needs to evaluate in one loop. The pieces of interest for calculating the \textbf{Adjacent Bonus} were added to a set to reduce the time needed for lookups in the following nested loops.
 
+
+\bibliography{report}{}
+\bibliographystyle{plain}
 \end{document}
